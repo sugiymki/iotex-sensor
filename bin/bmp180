@@ -1,0 +1,26 @@
+#!/usr/bin/python
+#
+# Title: script for getting data from BMP180
+#
+# Author: Ko-ichiro Sugiyama
+#
+# This program is based on the following script: 
+# https://github.com/adafruit/Adafruit_Python_BMP/blob/master/examples/simpletest.py
+
+import Adafruit_BMP.BMP085 as BMP085
+import argparse
+
+sensor = BMP085.BMP085()
+
+parser = argparse.ArgumentParser(description='MyScript')
+parser.add_argument('--pressure',   '-p', action='store_const', const=True, default=False )
+parser.add_argument('--temperature','-t', action='store_const', const=True, default=False )
+args = parser.parse_args()
+
+if args.pressure:
+    print('{0:0.2f}'.format(sensor.read_pressure()))
+if args.temperature:
+    print('{0:0.2f}'.format(sensor.read_temperature()))
+if not args.temperature and not args.pressure: 
+    print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
+    print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))

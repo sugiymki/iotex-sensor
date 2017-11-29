@@ -1,0 +1,15 @@
+#!/usr/bin/python
+#
+# Title: script for getting data from STL2561
+#
+# Author: Ko-ichiro Sugiyama
+#
+
+from tsl2561 import TSL2561
+
+if __name__ == "__main__":
+  tsl = TSL2561(debug=True)
+  light = tsl.lux()
+  print(str(light))
+
+    
