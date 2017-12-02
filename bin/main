@@ -2,12 +2,14 @@
 # coding: utf-8
 #
 # 表題: センサーからデータを取得してファイルに保存するためのスクリプト
+#
 # 履歴: 2017-01-11 杉山耕一朗
 #       2017-03-01 杉山耕一朗
 #       2017-11-17 杉山耕一朗
 #       2017-11-18 杉山耕一朗
-
-# $ sudo gem install net-ping
+#       2017-12-03 杉山耕一朗
+#
+# メモ: sudo できることが前提
 
 require 'open3'
 require 'fileutils'
@@ -70,15 +72,16 @@ host = o.chomp
 
 # サーバ名
 server = "sky.epi.it.matsue-ct.jp"
+php    = "http://#{server}/~sugiyama/test/monitoring.php"
 
 # ディレクトリの用意. 定常
 dir_now = "data_now/#{host}"
 FileUtils.mkdir_p( dir_now ) unless FileTest.exist?( dir_now )
-dir_err = "data_err/#{host}"
-FileUtils.mkdir_p( dir_err ) unless FileTest.exist?( dir_err )
-file_err1 = "#{dir_err}/retry.txt"
-file_err2 = "#{dir_err}/retry.tmp.txt"
-file_err3 = "#{dir_err}/retry.all.txt" 
+dir_chk = "data_chk/#{host}"
+FileUtils.mkdir_p( dir_chk ) unless FileTest.exist?( dir_chk )
+file_chk1 = "#{dir_chk}/retry.txt"
+file_chk2 = "#{dir_chk}/retry.tmp.txt"
+file_chk3 = "#{dir_chk}/retry.all.txt" 
 
 # 保管用配列
 var_list = Array.new
@@ -149,8 +152,17 @@ while true do
     dir_csv = "data_csv/#{host}/#{date.strftime("%Y")}/#{date.strftime("%Y-%m")}"
     FileUtils.mkdir_p( dir_csv ) unless FileTest.exist?( dir_csv )      
     
+    # IP の取得
+    o, e, s = Open3.capture3("hostname -I")
+    ip = o.chomp.split(" ").pop
+
+    # 無線 LAN アクセスポイントの ESSID を取得
+    o, e, s = Open3.capture3("iwconfig wlan0|grep ESSID")
+    /ESSID: \"(.+)\"/ =~ o
+    essid = $1 
+    
     # url の準備
-    url = "http://sky.epi.it.matsue-ct.jp/~sugiyama/test/monitoring.php?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=mon"
+    url = "#{php}?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=mon\&ip=#{ip}\&essid=#{essid}"
 
     var_list.each{|var|    
 #      p var
@@ -190,49 +202,48 @@ while true do
     }
 
     # サーバへ情報を送る.
+    o, e, s = Open3.capture3("curl -m 2 -X GET \"#{url}\"") # タイムアウト 2 秒
 #    p url
-    o, e, s = Open3.capture3("curl -m 10 -X GET \"#{url}\"") # タイムアウト 10 秒
 #    p o, e, s
 
     # curl コマンドがタイムアウトするか否かでネットワークの接続性を判断
     if (/exit 0$/ =~ s.to_s) 
 
-      # IP の出力
-      o, e, s = Open3.capture3("hostname -I")
-      ip = o.chomp.split(" ")
-      # p ip[0]
-      file = open( "#{dir_now}/ip.txt", "w")
-      file.puts( ip[0] )
-      file.close
+#      # IP の取得
+#      o, e, s = Open3.capture3("hostname -I")
+#      ip = o.chomp.split(" ").pop
       
       # 送信漏れがあれば (該当ファイルがあれば) 再度送信.
-      # 一度に全部送ると時間がかかるので, 30 行分に限定. 
-      if FileTest.exist?( file_err1 ) 
+      # 一度に全部送ると時間がかかるので, 10 行分に限定. 
+      if FileTest.exist?( file_chk1 ) 
         i = 0
-        rfile = open(file_err2, "w")
-        efile = open(file_err1, "r") 
+        efile = open(file_chk1, "r") 
+        rfile = open(file_chk2, "w")  # 一時ファイル
         while line = efile.gets
-          if (i < 30)
+          if (i < 10)
             o, e, s = Open3.capture3( line )
           else
-            rfile.puts( line )  # 31 行目以降は一時ファイルに保管.
+            rfile.puts( line )  # 11 行目以降は一時ファイルに保管.
           end
           i=i+1
         end
         efile.close
         rfile.close
-        FileUtils.mv(file_err2, file_err1) # 31 行目以降をファイルに残す
+        FileUtils.mv(file_chk2, file_chk1) # 11 行目以降をファイルに残す
       end
 
     else
-      rfile = open(file_err1, "a")
-      afile = open(file_err3, "a") #テスト用
-      rfile.puts("curl -X GET \"#{url}\"")  # 実行コマンドを保管
-      afile.puts("curl -X GET \"#{url}\"")  # テスト用
+      # 実行コマンドを保管
+      rfile = open(file_chk1, "a")
+      rfile.puts("curl -X GET \"#{url}\"") 
       rfile.close
+
+      # 実行コマンドを保管 (チェック用)
+      afile = open(file_chk3, "a") 
+      afile.puts("curl -X GET \"#{url}\"")  
       afile.close
 
-      # DHCP 再起動
+      # ネットワーク再接続のために DHCP 再起動
       system("sudo /etc/init.d/dhcpcd stop")
       system("sudo /etc/init.d/dhcpcd start")
     end
@@ -240,4 +251,3 @@ while true do
 end
 
 exit
-
