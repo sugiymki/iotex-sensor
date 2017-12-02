@@ -21,7 +21,7 @@
 #
 # m h  dom mon dow   command
 MAILTO=""
-PATH=/usr/bin:/bin:/usr/sbin:/sbin
-*/5 *    * * * rsync -e "ssh -l jxxxx" -av ./data_now/ sky.epi.it.matsue-ct.jp:/iotex/data_now/
-3   */12 * * * rsync -e "ssh -l jxxxx" -av ./data_csv/ sky.epi.it.matsue-ct.jp:/iotex/data_csv/
-@reboot /usr/local/bin/sensors
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+13  */12 * * * rsync -e "ssh -l jxxxx" -av ./data_chk/ sky.epi.it.matsue-ct.jp:/iotex2017/data_chk/
+3   */12 * * * rsync -e "ssh -l jxxxx" -av ./data_csv/ sky.epi.it.matsue-ct.jp:/iotex2017/data_csv/
+@reboot ./iotex-sensor/bin/main
