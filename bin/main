@@ -15,14 +15,17 @@ require 'open3'
 require 'fileutils'
 require "matrix"
 
-# パス
+# パス.
+# sht は pip install sht で /usr/local/bin 以下にインストールされる.
+# bmp180, tmp007, tsl2561 は本 git リポジトリで提供.
+path = "./iotex-sensor/bin"
 bin_list = {
   "sht75"   => "/usr/local/bin/sht  -trd 24 23",
   "sht75-2" => "/usr/local/bin/sht  -trd 27 22",
   "sht75-3" => "/usr/local/bin/sht  -trd 18 17",
-  "bmp180"=> "/usr/local/bin/bmp180 -p -t",
-  "tmp007"=> "/usr/local/bin/tmp007 --obj --die",
-  "tsl2561"=> "/usr/local/bin/tsl2561 -l"
+  "bmp180"=> "#{path}/bmp180 -p -t",
+  "tmp007"=> "#{path}/tmp007 --obj --die",
+  "tsl2561"=> "#{path}/tsl2561 -l"
 }
 
 # テキストファイル
