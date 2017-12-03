@@ -155,10 +155,6 @@ while true do
     dir_csv = "data_csv/#{host}/#{date.strftime("%Y")}/#{date.strftime("%Y-%m")}"
     FileUtils.mkdir_p( dir_csv ) unless FileTest.exist?( dir_csv )      
     
-#    # IP の取得
-#    o, e, s = Open3.capture3("hostname -I")
-#    ip = o.chomp.split(" ").pop
-
     # 無線 LAN アクセスポイントの ESSID を取得
     o, e, s = Open3.capture3("iwconfig wlan0|grep ESSID")
     /ESSID: \"(.+)\"/ =~ o
@@ -212,10 +208,6 @@ while true do
     # curl コマンドがタイムアウトするか否かでネットワークの接続性を判断
     if (/exit 0$/ =~ s.to_s) 
 
-#      # IP の取得
-#      o, e, s = Open3.capture3("hostname -I")
-#      ip = o.chomp.split(" ").pop
-      
       # 送信漏れがあれば (該当ファイルがあれば) 再度送信.
       # 一度に全部送ると時間がかかるので, 10 行分に限定. 
       if FileTest.exist?( file_chk1 ) 
