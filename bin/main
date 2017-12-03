@@ -155,9 +155,9 @@ while true do
     dir_csv = "data_csv/#{host}/#{date.strftime("%Y")}/#{date.strftime("%Y-%m")}"
     FileUtils.mkdir_p( dir_csv ) unless FileTest.exist?( dir_csv )      
     
-    # IP の取得
-    o, e, s = Open3.capture3("hostname -I")
-    ip = o.chomp.split(" ").pop
+#    # IP の取得
+#    o, e, s = Open3.capture3("hostname -I")
+#    ip = o.chomp.split(" ").pop
 
     # 無線 LAN アクセスポイントの ESSID を取得
     o, e, s = Open3.capture3("iwconfig wlan0|grep ESSID")
@@ -165,7 +165,7 @@ while true do
     essid = $1 
     
     # url の準備
-    url = "#{php}?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=mon\&ip=#{ip}\&essid=#{essid}"
+    url = "#{php}?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=mon\&essid=#{essid}"
 
     var_list.each{|var|    
 #      p var
