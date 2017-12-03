@@ -17,3 +17,8 @@
   * crontab : crontab の例
 
   * zabbix-agent.conf : zabbix の設定ファイルの例
+
+## 使い方
+
+以下を参照.
+http://www.gfd-dennou.org/arch/sugiyama/IoTeX_2017/lecture-note_10-1.htm.ja
