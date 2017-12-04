@@ -24,4 +24,4 @@ MAILTO=""
 PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 13  */12 * * * rsync -e "ssh -l jxxxx" -av ./data_chk/ sky.epi.it.matsue-ct.jp:/iotex2017/data_chk/
 3   */12 * * * rsync -e "ssh -l jxxxx" -av ./data_csv/ sky.epi.it.matsue-ct.jp:/iotex2017/data_csv/
-@reboot ./iotex-sensor/bin/main
+@reboot ./iotex-sensor/bin/monitoring
