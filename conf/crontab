@@ -22,5 +22,5 @@
 # m h  dom mon dow   command
 MAILTO=""
 PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-0   */6 * * * rsync -e "ssh -l jxxxx" -a data_csv sky.epi.it.matsue-ct.jp:~/
+0   */6 * * * rsync -e "ssh -l jxxxx" -a data_now sky.epi.it.matsue-ct.jp:~/
 @reboot ./iotex-sensor/bin/monitoring
