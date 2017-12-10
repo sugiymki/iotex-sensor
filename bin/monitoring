@@ -80,7 +80,7 @@ php    = "http://#{server}/~sugiyama/test/monitoring.php"
 # ディレクトリの用意. 定常
 dir_now = "data_now/#{host}"
 FileUtils.mkdir_p( dir_now ) unless FileTest.exist?( dir_now )
-dir_chk = "data_chk/#{host}"
+dir_chk = dir_now
 FileUtils.mkdir_p( dir_chk ) unless FileTest.exist?( dir_chk )
 file_chk1 = "#{dir_chk}/retry.txt"
 file_chk2 = "#{dir_chk}/retry.tmp.txt"
@@ -151,10 +151,6 @@ while true do
   # 1 分間隔で平均 => データ保管 & 転送
   if date.sec == 0  
     
-    # csv ファイルの保管先の用意. 1 日毎に変更. 
-    dir_csv = "data_csv/#{host}/#{date.strftime("%Y")}/#{date.strftime("%Y-%m")}"
-    FileUtils.mkdir_p( dir_csv ) unless FileTest.exist?( dir_csv )      
-    
     # 無線 LAN アクセスポイントの ESSID を取得
     o, e, s = Open3.capture3("iwconfig wlan0|grep ESSID")
     /ESSID:\"(.+)\"/ =~ o
@@ -189,12 +185,6 @@ while true do
         # 保存
         url = "#{url}\&#{db_list[var][i]}=#{mean}"
       end
-
-      # csv ファイルに保存. 追加
-      # 1 日毎にファイル名を変更. 
-      f = open("#{dir_csv}/#{var}_#{date.strftime("%Y-%m-%d")}.csv", "a")
-      f.puts( "#{date.strftime("%Y/%m/%d %H:%M:%S")},#{output_list.join(',')},")
-      f.close
 
       # 初期化
       data_10sec[var] = Array.new      
