@@ -8,6 +8,7 @@
 #       2017-11-17 杉山耕一朗
 #       2017-11-18 杉山耕一朗
 #       2017-12-03 杉山耕一朗
+#       2017-12-15 杉山耕一朗
 #
 # メモ: sudo できることが前提
 
@@ -93,7 +94,7 @@ var_list = Array.new
 ["sht75", "sht75-2", "sht75-3"].each{|sens|
   o, e, s = Open3.capture3(bin_list[sens])
   num = o.split("\n")
-  unless num[0].to_f =~ /^[0-9]/
+  unless num[0] == nil
     var_list.push( sens )
   end
 }
