@@ -1,0 +1,121 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+#
+# 表題: グラフ作成のためのスクリプト. CSV ファイル利用版.
+#
+
+require 'csv'
+require 'date'
+require "numo/gnuplot"
+
+# 欠損値
+miss = 999.9
+
+# 全てのデバイスについて実行
+Dir.glob("/iotex/data_csv_10min/iot-*").sort.each do |dir|
+
+  device = File.basename( dir )
+  p device
+  next if device == 'iot-46' || device == 'iot-47'
+  
+  # 30, 90, 600 日の幅で描画
+  [30,90,600].each do |range|
+    p range
+    
+    # ホスト名, 公開ディレクトリの設定
+    myid   = device
+    pubdir = "/home/sugiyama/public_html/iotex/timeline2/"
+    srcdir = "/iotex/data_csv_10min/#{myid}/"
+
+    # 描画範囲
+    time_from = DateTime.now - range
+    
+    # csv ファイルに含まれる変数の一覧
+    vars = [
+      "time","temp","temp2","temp3","humi","humi2","humi3",
+      "dp","dp2","dp3","pres","bmptemp","dietemp","objtemp","lux",
+      "didx","didx2","didx3"
+    ]
+    
+    # 表示する変数
+    plots  = [
+      ["temp","objtemp"],["humi"],["pres"],["lux"],["didx"]
+    ]
+
+    titles = [
+      "temperature (C)",
+      "humidity (%)",
+      "pressure (Pa)",
+      "luminous intensity (lux)",
+      "discomfortable index"
+    ]
+    pnum  = titles.size   # 配列のサイズ
+    
+    # 変数の添字
+    idx_list = Array.new
+    pnum.times do |i|
+      idx_list[i] = Array.new
+      plots[i].size.times do |j|
+        idx_list[i].push( vars.index( plots[i][j] ) )
+      end
+    end
+    
+    # 配列の初期化
+    time_list = Array.new
+    data_list = Array.new
+    pnum.times do |i|
+      data_list[i] = Array.new
+      plots[i].size.times do |j|
+        data_list[i][j] = Array.new
+      end
+    end
+    
+    # csv ファイルの読み込み. 配列化
+    Dir.glob("#{srcdir}/*csv").sort.each do |csvfile|
+      CSV.foreach( csvfile ) do |item|
+        time = DateTime.parse( "#{item[0]} JST" )
+        if time >= time_from
+          time_list.push( time )
+          pnum.times do |i|
+            plots[i].size.times do |j|
+              data_list[i][j].push( item[idx_list[i][j]].to_f )
+            end
+          end
+        end
+      end
+    end
+    
+    # グラフ作成
+    pnum.times do |i|
+      
+      Numo.gnuplot do
+        #    debug_on
+        set ylabel:   "#{titles[i]}"
+        set xlabel:   "time"
+        set xdata:    "time"
+        set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+        set format_x: "%m/%d %H:%M"
+        set xtics:    "rotate by -60"
+        set terminal: "png"
+        set output:   "#{pubdir}/#{myid}_#{plots[i][0]}_#{range}day.png"
+        set :datafile, :missing, "#{miss}" # 欠損値
+
+        if plots[i].size == 2
+          n1 = data_list[i][1].uniq.size
+          if n1 != 2          
+            # set :key, :left, "outside"
+            set key: "box"
+            plot [time_list, data_list[i][1], using:'1:($2)', with:"points", lc_rgb:"blue", lw:3, title:"wall"],
+                 [time_list, data_list[i][0], using:'1:($2)', with:"points", lc_rgb:"green",lw:3, title:"air"]
+          else
+            set :nokey
+            plot time_list, data_list[i][0], using:'1:($2)', with:"points", lc_rgb:"green",  lw:3
+          end
+        else
+          set :nokey
+          plot time_list, data_list[i][0], using:'1:($2)', with:"points", lc_rgb:"green", lw:3
+        end
+      end
+    end   
+  end
+end
