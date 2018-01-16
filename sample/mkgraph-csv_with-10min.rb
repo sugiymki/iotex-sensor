@@ -14,10 +14,10 @@ require 'numo/gnuplot'
 ###
 
 # デバイス名
-myid = "iot-01"
+myid = ARGV[0]
 
 # 公開ディレクトリ
-pubdir = "/home/sugiyama/public_html/graph-csv_with-10min" 
+pubdir = "/iotex/graph_1month/#{myid}/" 
 
 
 ###
@@ -25,7 +25,7 @@ pubdir = "/home/sugiyama/public_html/graph-csv_with-10min"
 ###
 
 # データ置き場
-srcdir = "/iotex/data_csv_10min/#{myid}/"
+srcdir = "/iotex/graph_1month/#{myid}/"
 
 # 公開ディレクトリの作成
 FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
@@ -89,9 +89,41 @@ miss = 999.9
   end
 
   # 湿度グラフ作成 (各自で書くこと).
+  Numo.gnuplot do
+    #    debug_on
+    set ylabel:   "humidity (%)"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x: "%m/%d %H:%M"
+    set xtics:    "rotate by -60"
+    set terminal: "png"
+    set output:   "#{pubdir}/#{myid}_humi_#{range}days.png"
+    set :datafile, :missing, "#{miss}" # 欠損値
+    set :nokey # 凡例なし
+    # set key: "box" #凡例あり
+
+    plot time_list, humi_list, using:'1:($2)', with:"linespoints", lc_rgb:"blue", lw:3
+  end
 
 
   # 不快指数グラフ作成 (各自で書くこと).
+  Numo.gnuplot do
+    #    debug_on
+    set ylabel:   "didx"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x: "%m/%d %H:%M"
+    set xtics:    "rotate by -60"
+    set terminal: "png"
+    set output:   "#{pubdir}/#{myid}_didx_#{range}days.png"
+    set :datafile, :missing, "#{miss}" # 欠損値
+    set :nokey # 凡例なし
+    # set key: "box" #凡例あり
+
+    plot time_list, didx_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:3
+  end
 
   
 end
