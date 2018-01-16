@@ -14,10 +14,10 @@ require 'numo/gnuplot'
 ###
 
 # デバイス名
-myid = "iot-01"
+myid = ARGV[0]
 
 # 公開ディレクトリ
-pubdir = "/home/sugiyama/public_html/graph-csv_with-10min" 
+pubdir = "/iotex/graph_1day/#{myid}" 
 
 
 ###
@@ -28,8 +28,11 @@ pubdir = "/home/sugiyama/public_html/graph-csv_with-10min"
 srcdir = "/iotex/data_csv_10min/#{myid}/"
 
 # 公開ディレクトリの作成
-FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
-FileUtils.mkdir_p( pubdir ) until FileTest.exists?( pubdir )
+(DateTime.parse('#{ARGV[2]}').DateTime.now).each do |time_from|
+  pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
+  ##FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
+  FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir_temp )
+end
 
 # 欠損値
 miss = 999.9
@@ -60,7 +63,7 @@ miss = 999.9
       time = DateTime.parse( "#{item[0]} JST" )
 
       # 指定された時刻より後のデータを取得.
-      if time >= time_from
+      if time >= time_from && time <= time_from + 1
         time_list.push( time )          # 時刻        
         temp_list.push( item[1].to_f )  # 温度
         humi_list.push( item[4].to_f )  # 湿度
@@ -69,7 +72,8 @@ miss = 999.9
     end
   end
   p "plot from #{time_list[0]} to #{time_list[-1]}"
-  
+  next if temp_list.min == temp_list.max
+
   # 温度グラフ作成.
   Numo.gnuplot do
     #    debug_on
@@ -80,7 +84,7 @@ miss = 999.9
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir}/#{myid}_temp_#{range}days.png"
+    set output:   "#{myid}_temp_#{range}days.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
@@ -89,9 +93,37 @@ miss = 999.9
   end
 
   # 湿度グラフ作成 (各自で書くこと).
-
+  Numo.gnuplot do
+    #    debug_on
+    set ylabel:   "history (%)"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x: "%m/%d %H:%M"
+    set xtics:    "rotate by -60"
+    set terminal: "png"
+    set output:   "#{myid}_temp_#{range}days.png"
+    set :datafile, :missing, "#{miss}" # 欠損値
+    set :nokey # 凡例なし
+    # set key: "box" #凡例あり
+    plot time_list, humi_list, using:'1:($2)', with:"linespoints", lc_rgb:"blue", lw:3
+  end
 
   # 不快指数グラフ作成 (各自で書くこと).
+  Numo.gnuplot do
+    #    debug_on
+    set ylabel:   "discomfort index (%)"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x: "%m/%d %H:%M"
+    set xtics:    "rotate by -60"
+    set terminal: "png"
+    set output:   "#{myid}_temp_#{range}days.png"
+    set :datafile, :missing, "#{miss}" # 欠損値
+    set :nokey # 凡例なし
+    # set key: "box" #凡例あり
 
-  
+    plot time_list, didx_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:3
+  end
 end
