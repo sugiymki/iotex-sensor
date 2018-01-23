@@ -14,26 +14,18 @@ require 'numo/gnuplot'
 ###
 
 # デバイス名
-id1 = "iot-06"
-id2 = "iot-07"
-id3 = "iot-08"
-id4 = "iot-09"
-id5 = "iot-10"
+myid = "iot-01"
 
 # 公開ディレクトリ
-pubdir1 = "/home/j1408/public_html/graph-csv_with-1day" 
-pubdir2 = "/home/j1423/public_html/graph-csv_with-1day" 
-pubdir3 = "/home/j1424/public_html/graph-csv_with-1day" 
-pubdir4 = "/home/j1433/public_html/graph-csv_with-1day" 
-pubdir5 = "/home/j1441/public_html/graph-csv_with-1day" 
-
-# データ置き場
-srcdir = "/home/j1433/public_html/data_csv_1day"
+pubdir = "/home/sugiyama/public_html/graph-csv_with-10min" 
 
 
 ###
 ### 初期化
 ###
+
+# データ置き場
+srcdir = "/iotex/data_csv_10min/#{myid}/"
 
 # 公開ディレクトリの作成
 FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
@@ -42,106 +34,64 @@ FileUtils.mkdir_p( pubdir ) until FileTest.exists?( pubdir )
 # 欠損値
 miss = 999.9
 
-## csv ファイルに含まれる変数の一覧
-#vars = [
-#  "time","temp","temp2","temp3","humi","humi2","humi3",
-#  "dp","dp2","dp3","pres","bmptemp","dietemp","objtemp","lux",
-#  "didx","didx2","didx3"
-#]
-
 
 ###
 ### データの取得とグラフの作成
 ### 
 
-# 7, 30, 90, 120, 240, 360 日の幅で描画  
-[30, 90, 120, 240, 360].each do |range|
+# 7, 30, 90, 120, 360 日の幅で描画
+(DateTime.parse("#{ARGV[0]}")_DataTime.now).select{|d| d.wday == 0}.each do |time_from|
   p "#{range} days"
-
+  
   # 描画範囲
   time_from = DateTime.now - range
   
-  # 配列の初期化
-  ops = ["mean", "min", "max", "stddev", "median"]
-  time_list = Array.new
-  temp_list = Hash.new
-  
-  # csv ファイルの読み込み. 配列化. 統計量ごとにファイルが異なる.
-  ops.each do |op|
+  # ハッシュと配列の初期化
+  time_list = Array.new #時刻
+  temp_list = Array.new #温度
+  humi_list = Array.new #湿度
+  didx_list = Array.new #不快係数
     
-    # 初期化
-    time_list     = Array.new
-    temp_list[op] = Array.new
+  # csv ファイルから指定された時刻を読み込み. 配列化
+  Dir.glob("#{srcdir}/*csv").sort.each do |csvfile|
+    CSV.foreach( csvfile ) do |item|
 
-    CSV.foreach( "#{srcdir}/#{myid}_#{op}.csv" ) do |item|
+      # 時刻. DateTime オブジェクト化.
+      time = DateTime.parse( "#{item[0]} JST" )
 
-      time = DateTime.parse( "#{item[0]} 00:00:00 JST" ) # 時刻
-        
-      # 指定期間のデータのみ配列化 (1 日毎の値)
+      # 指定された時刻より後のデータを取得.
       if time >= time_from
-
-        time_list.push( time )              # 時刻
-        temp_list[op].push( item[1].to_f )  # 温度
+        time_list.push( time )          # 時刻        
+        temp_list.push( item[1].to_f )  # 温度
+        humi_list.push( item[4].to_f )  # 湿度
+        didx_list.push( item[15].to_f ) # 不快係数
       end
     end
   end
   p "plot from #{time_list[0]} to #{time_list[-1]}"
   
+  # 温度グラフ作成.
+  Numo.gnuplot do
+    #    debug_on
+    set ylabel:   "temperature (C)"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x: "%m/%d %H:%M"
+    set xtics:    "rotate by -60"
+    set terminal: "png"
+    set output:   "#{pubdir}/#{myid}_temp_#{range}days.png"
+    set :datafile, :missing, "#{miss}" # 欠損値
+    set :nokey # 凡例なし
+    # set key: "box" #凡例あり
+
+    plot time_list, temp_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3
+  end
+
+  # 湿度グラフ作成 (各自で書くこと).
+
+
+  # 不快指数グラフ作成 (各自で書くこと).
+
   
-  ###
-  ### 1 日ごとの統計量. グラフ化. 
-  ###
-
-  # 平均値, 最小値, 最大値の比較のグラフ
-  Numo.gnuplot do
-    set ylabel:   "temperature (C)"
-    set xlabel:   "time"
-    set xdata:    "time"
-    set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
-    set format_x: "%Y/%m/%d"
-    set xtics:    "rotate by -60"
-    set terminal: "png"
-    set output:   "#{pubdir}/#{myid}_temp1_#{range}day.png"
-    set key: "box"
-    set :datafile, :missing, "999.9"
-    
-    plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
-         [time_list, temp_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
-         [time_list, temp_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
-  end   
-
-  # 平均値と中央値の比較のグラフ
-  # ... 自分で書く ...
-
-  Numo.gnuplot do
-    set ylabel:   "temperature (C)"
-    set xlabel:   "time"
-    set xdata:    "time"
-    set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
-    set format_x: "%Y/%m/%d"
-    set xtics:    "rotate by -60"
-    set terminal: "png"
-    set output:   "#{pubdir}/#{myid}_temp2_#{range}day.png"
-    set key: "box"
-    set :datafile, :missing, "999.9"
-    plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
-         [time_list, temp_list["median"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"median"]
-  end   
-
-  # 平均値 + 標準偏差のグラフ作成
-  Numo.gnuplot do
-    set ylabel:   "temperature (C)"
-    set xlabel:   "time"
-    set xdata:    "time"
-    set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
-    set format_x: "%Y/%m/%d"
-    set xtics:    "rotate by -60"
-    set terminal: "png"
-    set output:   "#{pubdir}/#{myid}_temp3_#{range}day.png"
-    set :nokey
-    set :datafile, :missing, "999.9"
-    
-    plot time_list,temp_list["mean"],temp_list["stddev"], using:'1:2:3', with:"yerrorbars", lc_rgb:"green", lw:3
-  end   
 end
-
