@@ -14,22 +14,27 @@ require 'numo/gnuplot'
 ###
 
 # デバイス名
-myid = "iot-01"
+myid = ARGV[0]
 
 # 公開ディレクトリ
-pubdir = "/home/sugiyama/public_html/graph-csv_with-1day" 
+pubdir = "/iotex/graph_1month/#{myid}" 
 
 # データ置き場
-srcdir = "/home/sugiyama/public_html/data_csv_1day"
+srcdir = "/iotex/graph_1month/#{myid}"
 
 
 ###
 ### 初期化
 ###
+(DateTime.parse("#{ARGV[2]}")..DateTime.parse("#{ARGV[2]}")>>1).select{|d| d.day==1}.each do |time_from|
 
 # 公開ディレクトリの作成
-FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
-FileUtils.mkdir_p( pubdir ) until FileTest.exists?( pubdir )
+pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y")}"
+pubdir_humi = "#{pubdir}/humi/#{time_from.strftime("%Y")}"
+pubdir_didx = "#{pubdir}/didx/#{time_from.strftime("%Y")}"
+FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir_temp )
+FileUtils.mkdir_p( pubdir_humi ) until FileTest.exists?( pubdir_humi )
+FileUtils.mkdir_p( pubdir_didx ) until FileTest.exists?( pubdir_didx )
 
 # 欠損値
 miss = 999.9
@@ -45,18 +50,12 @@ miss = 999.9
 ###
 ### データの取得とグラフの作成
 ### 
-
-# 7, 30, 90, 120, 240, 360 日の幅で描画  
-[7, 30, 90, 120, 240, 360].each do |range|
-  p "#{range} days"
-
-  # 描画範囲
-  time_from = DateTime.now - range
-  
   # 配列の初期化
-  ops = ["mean", "min", "max", "stddev", "median"]
+  ops = ["mean", "mean2", "min", "max"]
   time_list = Array.new
   temp_list = Hash.new
+  humi_list = Hash.new
+  didx_list = Hash.new
   
   # csv ファイルの読み込み. 配列化. 統計量ごとにファイルが異なる.
   ops.each do |op|
@@ -64,6 +63,8 @@ miss = 999.9
     # 初期化
     time_list     = Array.new
     temp_list[op] = Array.new
+    humi_list[op] = Array.new
+    didx_list[op] = Array.new
 
     CSV.foreach( "#{srcdir}/#{myid}_#{op}.csv" ) do |item|
 
@@ -74,6 +75,8 @@ miss = 999.9
 
         time_list.push( time )              # 時刻
         temp_list[op].push( item[1].to_f )  # 温度
+        humi_list[op].push( item[4].to_f )  # 湿度
+        didx_list[op].push( item[15].to_f )  # 不快指数
       end
     end
   end
@@ -86,40 +89,57 @@ miss = 999.9
 
   # 平均値, 最小値, 最大値の比較のグラフ
   Numo.gnuplot do
+    set title:	  "#{ARGV[1]}(温度)"
     set ylabel:   "temperature (C)"
     set xlabel:   "time"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
     set format_x: "%Y/%m/%d"
-    set xtics:    "rotate by -60"
+    set xtics:    "rotate by -70"
     set terminal: "png"
-    set output:   "#{pubdir}/#{myid}_temp1_#{range}day.png"
+    set output:   "#{pubdir_temp}/#{myid}_temp_#{time_from.strftime("%Y-%m")}.png"
     set key: "box"
     set :datafile, :missing, "999.9"
     
     plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
+         [time_list, temp_list["mean2"],  using:'1:($2)', with:"linespoints", lc_rgb:"black",  lw:3, title:"mean2"],
          [time_list, temp_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
          [time_list, temp_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
   end   
-
-  # 平均値と中央値の比較のグラフ
-  # ... 自分で書く ...
-
-
-  # 平均値 + 標準偏差のグラフ作成
   Numo.gnuplot do
-    set ylabel:   "temperature (C)"
+    set title:	  "#{ARGV[1]}(湿度)"
+    set ylabel:   "humidity"
     set xlabel:   "time"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
     set format_x: "%Y/%m/%d"
-    set xtics:    "rotate by -60"
+    set xtics:    "rotate by -70"
     set terminal: "png"
-    set output:   "#{pubdir}/#{myid}_temp3_#{range}day.png"
-    set :nokey
+    set output:   "#{pubdir_humi}/#{myid}_humi_#{time_from.strftime("%Y-%m")}.png"
+    set key: "box"
     set :datafile, :missing, "999.9"
     
-    plot time_list,temp_list["mean"],temp_list["stddev"], using:'1:2:3', with:"yerrorbars", lc_rgb:"green", lw:3
+    plot [time_list, humi_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
+         [time_list, humi_list["mean2"],  using:'1:($2)', with:"linespoints", lc_rgb:"black",  lw:3, title:"mean2"],
+         [time_list, humi_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
+         [time_list, humi_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
+  end   
+  Numo.gnuplot do
+    set title:	  "#{ARGV[1]}(不快指数)"
+    set ylabel:   "discomfort index"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
+    set format_x: "%Y/%m/%d"
+    set xtics:    "rotate by -70"
+    set terminal: "png"
+    set output:   "#{pubdir_didx}/#{myid}_didx_#{time_from.strftime("%Y-%m")}.png"
+    set key: "box"
+    set :datafile, :missing, "999.9"
+    
+    plot [time_list, didx_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
+         [time_list, didx_list["mean2"],  using:'1:($2)', with:"linespoints", lc_rgb:"black",  lw:3, title:"mean2"],
+         [time_list, didx_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
+         [time_list, didx_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
   end   
 end
-

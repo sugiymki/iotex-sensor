@@ -105,7 +105,7 @@ while (time_list[idx0] + 1 < time_list[-1]) do
   min    = Array.new( num, miss )  # 欠損値
   max    = Array.new( num, miss )  # 欠損値
   
-  puts "#{time0} : #{time_list[idx0+1]}..#{time_list[idx1]}"
+#  puts "#{time0} : #{time_list[idx0+1]}..#{time_list[idx1]}"
   
   # 1 つでも欠損値が含まれていたら日平均は欠損値扱いに.
   # 欠損値が含まれていない場合は idx2 は nil になる. 
@@ -139,7 +139,5 @@ while (time_list[idx0] + 1 < time_list[-1]) do
   # 添字の更新
   idx0 = idx1 
   idx1 = idx0 + count  # 24時間分進める
-  (DateTime.parse("#{ARGV[0]}")..DateTime.now).select{|d| d.day==1}.each do |time_from|
-  end
 end
 
