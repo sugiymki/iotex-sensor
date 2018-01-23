@@ -62,7 +62,7 @@ miss = 999.9
         time = DateTime.parse( "#{item[0]} JST" )
 
         # 指定された時刻より後のデータを取得.
-        if time >= time_from
+        if time >= time_from && time <= time_from + 7 && time.min == 0
           time_list.push( time )          # 時刻        
           temp_list.push( item[1].to_f )  # 温度
           humi_list.push( item[4].to_f )  # 湿度
