@@ -39,10 +39,11 @@ miss = 999.9
 ### データの取得とグラフの作成
 ### 
 
-# 7, 30, 90, 120, 360 日の幅で描画
 (DateTime.parse("#{ARGV[0]}")_DataTime.now).select{|d| d.wday == 0}.each do |time_from|
   p "#{range} days"
+  temp2_list = Hash.new #温度のハッシュの初期化
   
+
   # 描画範囲
   time_from = DateTime.now - range
   
@@ -53,6 +54,7 @@ miss = 999.9
   didx_list = Array.new #不快係数
     
   # csv ファイルから指定された時刻を読み込み. 配列化
+  ["iot-06", "iot-07", iot-08", "iot-09", "iot-10"].each do |myid|
   Dir.glob("#{srcdir}/*csv").sort.each do |csvfile|
     CSV.foreach( csvfile ) do |item|
 
@@ -67,6 +69,7 @@ miss = 999.9
         didx_list.push( item[15].to_f ) # 不快係数
       end
     end
+  end
   end
   p "plot from #{time_list[0]} to #{time_list[-1]}"
   
