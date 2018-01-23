@@ -14,11 +14,10 @@ require 'fileutils'
 ###
 
 # デバイス名
-myid = "iot-01"  
+myid = ARGV[0]  
 
 # 公開ディレクトリ
-pubdir = "/home/sugiyama/public_html/data_csv_1day"
-
+pubdir = "/iotex/graph_1day/#{myid}"
 
 ###
 ### 初期化
@@ -27,10 +26,10 @@ pubdir = "/home/sugiyama/public_html/data_csv_1day"
 # データ置き場
 srcdir = "/iotex/data_csv_10min/#{myid}/"
 
+(DateTime.parse('#{ARGV[2]}')..DateTime.now).each do |time_from|
 # 公開ディレクトリの作成
-FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
-FileUtils.mkdir_p( pubdir ) until FileTest.exists?( pubdir )
-
+pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
+FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir_temp )
 # 欠損値
 miss = 999.9
 
