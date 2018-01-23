@@ -26,7 +26,7 @@ srcdir = "/iotex/graph_1month/#{myid}"
 ###
 ### 初期化
 ###
-(DateTime.parse("#{ARGV[2]}")..DateTime.parse("#{ARGV[2]}")>>1).select{|d| d.day==1}.each do |time_from|
+(DateTime.parse("#{ARGV[2]}")..DateTime.now).select{|d| d.day==1}.each do |time_from|
 
 # 公開ディレクトリの作成
 pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y")}"
@@ -71,7 +71,7 @@ miss = 999.9
       time = DateTime.parse( "#{item[0]} 00:00:00 JST" ) # 時刻
         
       # 指定期間のデータのみ配列化 (1 日毎の値)
-      if time >= time_from
+      if time >= time_from && time <= time_from>>1
 
         time_list.push( time )              # 時刻
         temp_list[op].push( item[1].to_f )  # 温度
@@ -80,7 +80,7 @@ miss = 999.9
       end
     end
   end
-  p "plot from #{time_list[0]} to #{time_list[-1]}"
+  p "plot from #{time_list[0].to_date} to #{time_list[-1]}"
   
   
   ###
@@ -95,6 +95,7 @@ miss = 999.9
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
     set format_x: "%Y/%m/%d"
+#    set xrange:   "#{time_list[0].to_date}...#{time_list[-1].to_date}"
     set xtics:    "rotate by -70"
     set terminal: "png"
     set output:   "#{pubdir_temp}/#{myid}_temp_#{time_from.strftime("%Y-%m")}.png"
