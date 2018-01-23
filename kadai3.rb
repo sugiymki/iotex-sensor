@@ -55,6 +55,10 @@ miss = 999.9
     
   # csv ファイルから指定された時刻を読み込み. 配列化
   ["iot-06", "iot-07", iot-08", "iot-09", "iot-10"].each do |myid|
+    srcdir = "/iotex/data_csv_10min/#{myid}/"
+    temp_list[myid] = Array.new #温度
+    humi_list[myid] = Array.new #湿度
+    didx_list[myid] = Array.new #不快係数
     Dir.glob("#{srcdir}/*csv").sort.each do |csvfile|
       CSV.foreach( csvfile ) do |item|
 
@@ -64,9 +68,9 @@ miss = 999.9
         # 指定された時刻より後のデータを取得.
         if time >= time_from && time <= time_from + 7 && time.min == 0
           time_list.push( time )          # 時刻        
-          temp_list.push( item[1].to_f )  # 温度
-          humi_list.push( item[4].to_f )  # 湿度
-          didx_list.push( item[15].to_f ) # 不快係数
+          temp_list[myid].push( item[1].to_f )  # 温度
+          humi_list[myid].push( item[4].to_f )  # 湿度
+          didx_list[myid].push( item[15].to_f ) # 不快係数
         end
       end
     end
