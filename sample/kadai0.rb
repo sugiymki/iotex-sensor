@@ -2,6 +2,7 @@
 # coding: utf-8
 #
 # 表題: グラフ作成のためのスクリプト. CSV ファイル利用版.
+#       日曜日 1 日分の毎正時の値をプロットする. 
 #
 
 require 'csv'
@@ -17,8 +18,8 @@ require 'numo/gnuplot'
 myid = ARGV[0]
 
 # 公開ディレクトリ
-#pubdir = "/iotex/graph_1day/#{myid}"
-pubdir = "/iotex/graph_1day/tmp"
+#pubdir = "/iotex/graph_1day/#{myid}"     # 本番
+pubdir = "/iotex/graph_1day/tmp/#{myid}"  # テスト用
 
 
 ###
@@ -36,11 +37,8 @@ miss = 999.9
 ### データの取得とグラフの作成
 ###
 
-# 日曜からのデータを取得
+# 日曜 (wday=0) の日付を選ぶ
 (DateTime.parse("#{ARGV[2]}")..DateTime.now).select{|d| d.wday==0}.each do |time_from|  
-
-  p time_from
-
   
   # 公開ディレクトリの作成
   pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
@@ -64,8 +62,8 @@ miss = 999.9
       # 時刻. DateTime オブジェクト化.
       time = DateTime.parse( "#{item[0]} JST" )
 
-      # 指定された時刻より後のデータを取得.
-      if time >= time_from && time <= time_from + 1
+      # 指定された時刻より後のデータを取得. 1 日分取り出す. 毎正時のみ. 
+      if time >= time_from && time <= time_from + 1 && time.min == 0
         time_list.push( time )          # 時刻        
         temp_list.push( item[1].to_f )  # 温度
         temp2_list.push( item[2].to_f )  # 温度
@@ -97,7 +95,7 @@ miss = 999.9
     plot time_list, temp_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:2, title:"hogehoge"
   end
 
-  # 湿度グラフ作成 (各自で書くこと).
+  # 湿度グラフ作成
   Numo.gnuplot do
     #    debug_on
     set title:    "#{ARGV[1]} (湿度)"
@@ -115,7 +113,7 @@ miss = 999.9
     plot time_list, humi_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:2
   end
 
-  # 不快指数グラフ作成 (各自で書くこと).
+  # 不快指数グラフ作成
   Numo.gnuplot do
     #    debug_on
     set title:    "#{ARGV[1]} (不快指数)"
