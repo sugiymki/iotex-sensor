@@ -91,60 +91,41 @@ end
 
    plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"]
  end
-end
 
-###
-### 統計処理
-###
+ # 湿度グラフ作成
+  Numo.gnuplot do
+    #    debug_on
+    set title:    "#{ARGV[1]} (湿度)"
+    set ylabel:   "humidity (%)"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x: "%m/%d %H:%M"
+    set xtics:    "rotate by -60"
+    set terminal: "png"
+    set output:   "#{pubdir_humi}/#{myid}_humi_#{time_from.strftime("%Y%m%d")}.png"
+    set :datafile, :missing, "#{miss}" # 欠損値
+    set :nokey # 凡例なし
 
-# 初期化
-count = 24 # 24 時間
+    plot time_list, humi_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:2
+  end
 
-# 平均を取る開始時刻の添字. 時刻が 00:00:00 となるよう調整. 
-time0= DateTime.new(
-  time_list[0].year, time_list[0].month, time_list[0].day + 1,
-  0, 0, 0, "JST"
-)
-idx0 = time_list.index( time0 )
+  # 不快指数グラフ作成
+  Numo.gnuplot do
+    #    debug_on
+    set title:    "#{ARGV[1]} (不快指数)"
+    set ylabel:   "discomfort index"
+    set xlabel:   "time"
+    set xdata:    "time"
+    set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x: "%m/%d %H:%M"
+    set xtics:    "rotate by -60"
+    set terminal: "png"
+    set output:   "#{pubdir_didx}/#{myid}_didx_#{time_from.strftime("%Y%m%d")}.png"
+    set :datafile, :missing, "#{miss}" # 欠損値
+    set :nokey # 凡例なし
 
-# 平均を取る終了時刻の添字
-idx1 = idx0 + count
-
-# 時刻をずらしながら 1 日の統計量を作成する. 
-while (time_list[idx0] + 1 < time_list[-1]) do 
-
-  # 配列初期化
-  time0  = time_list[idx0]
-  mean   = Array.new( num, miss )  # 欠損値
-  min    = Array.new( num, miss )  # 欠損値
-  max    = Array.new( num, miss )  # 欠損値
-  stddev = Array.new( num, miss )  # 欠損値
-  median = Array.new( num, miss )  # 欠損値
-  
-  puts "#{time0} : #{time_list[idx0+1]}..#{time_list[idx1]}"
-  
-  # 1 つでも欠損値が含まれていたら日平均は欠損値扱いに.
-  # 欠損値が含まれていない場合は idx2 は nil になる. 
-  idx2 = ( vars_list_narray[0][idx0+1..idx1] ).to_a.index( miss )    
-  unless ( idx2 )
-    num.times do |i|
-      mean[i]  = vars_list_narray[i][idx0+1..idx1].mean(0)
-      min[i]   = # ... 自分で書く ...
-      max[i]   = # ... 自分で書く ...
-      stddev[i]= # ... 自分で書く ...
-      median[i]= # ... 自分で書く ...
-    end
-  end      
-
-  # ファイルの書き出し (平均値)
-  csv = open("#{pubdir}/#{myid}_mean.csv", "a")
-  csv.puts "#{time0.strftime("%Y/%m/%d")},#{mean.join(',')},\n"
-  csv.close
-  # 最小・最大・標準偏差・中央値のファイル出力
-  # ... 自分で書く ...
-
-  # 添字の更新
-  idx0 = idx1 
-  idx1 = idx0 + count  # 24時間分進める
+    plot time_list, didx_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:2
+  end
 end
 
