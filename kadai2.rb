@@ -86,10 +86,10 @@ end
    set xtics:    "rotate by -60"
    set terminal: "png"
    set output:   "#{pubdir}/temp/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
-   set key: "box"
-   set :datafile, :missing, "999.9"
-
-   plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"]
+   set :datafile, :missing, "#{miss}" # 欠損値
+   set key: "box" #凡例あり
+   set key: "below" #凡例あり
+   plot time_list, temp_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:2
  end
 
  # 湿度グラフ作成
