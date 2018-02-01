@@ -48,6 +48,9 @@ vars = [
   
 # 配列の初期化
 time_list = Array.new
+temp_list = Array.new #温度
+humi_list = Array.new #湿度
+didx_list = Array.new #不快係数
 vars_list = Array.new
 num = vars.size - 1 # 時刻分を除く
 num.times do |i|
@@ -77,8 +80,8 @@ end
 
  # NArray オブジェクトへ変換. 解析が容易になる. 
  Numo.gnuplot do
-   set title:    "#{ARCV[1]}(温度)
-   set ylabel:   "temperature(C)"
+   set title:    "#{ARCV[1]} (温度)
+   set ylabel:   "temperature (C)"
    set xlabel:   "time"
    set xdata:    "time"
    set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
