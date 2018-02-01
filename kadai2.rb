@@ -28,18 +28,15 @@ pubdir = "/iotex/graph_1week/#{myid}"
 srcdir = "/iotex/data_csv_10min/#{myid}/"
 
 # 公開ディレクトリの作成
-FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
-FileUtils.mkdir_p( pubdir ) until FileTest.exists?( pubdir )
+pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
+pubdir_humi = "#{pubdir}/humi/#{time_from.strftime("%Y-%m")}"
+pubdir_didx = "#{pubdir}/didx/#{time_from.strftime("%Y-%m")}"
+FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir_temp )
+FileUtils.mkdir_p( pubdir_humi ) until FileTest.exists?( pubdir_humi )
+FileUtils.mkdir_p( pubdir_didx ) until FileTest.exists?( pubdir_didx )
 
 # 欠損値
 miss = 999.9
-
-# csv ファイルに含まれる変数の一覧
-vars = [
-  "time","temp","temp2","temp3","humi","humi2","humi3",
-  "dp","dp2","dp3","pres","bmptemp","dietemp","objtemp","lux",
-  "didx","didx2","didx3"
-]
 
 
 ###
