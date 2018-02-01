@@ -5,9 +5,9 @@
 #
 
 require 'csv'
-require 'narray'
 require 'date'
 require 'fileutils'
+require 'numo/gnuplot
 
 ###
 ### デバイス毎の設定
