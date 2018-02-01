@@ -78,7 +78,7 @@ end
  # NArray オブジェクトへ変換. 解析が容易になる. 
  Numo.gnuplot do
    set title:    "#{ARCV[1]}(温度)
-   set ylabel:   " (C)"
+   set ylabel:   "temperature(C)"
    set xlabel:   "time"
    set xdata:    "time"
    set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
