@@ -14,7 +14,6 @@ require 'numo/gnuplot'
 ###
 
 # デバイス名
-myid = "iot-01"
 
 # 公開ディレクトリ
 pubdir = "/home/sugiyama/public_html/graph-csv_with-10min" 
@@ -24,22 +23,21 @@ pubdir = "/home/sugiyama/public_html/graph-csv_with-10min"
 ### 初期化
 ###
 
-# データ置き場
-srcdir = "/iotex/data_csv_10min/#{myid}/"
 
 # 公開ディレクトリの作成
 FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
 FileUtils.mkdir_p( pubdir ) until FileTest.exists?( pubdir )
-
+pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y")};
+FileUtils.mkdir_p{pubdir_temp} until FileTest.exists?(pubdir_temp)
 # 欠損値
 miss = 999.9
 
 
+(DateTime.parse("#{ARGV[0]}")..DateTime.now).select{|d| d.wday == 0}.each do |time_from|
 ###
 ### データの取得とグラフの作成
 ### 
 
-(DateTime.parse("#{ARGV[0]}")_DataTime.now).select{|d| d.wday == 0}.each do |time_from|
   p "#{range} days"
   temp2_list = Hash.new #温度のハッシュの初期化
   
@@ -54,7 +52,7 @@ miss = 999.9
   didx_list = Array.new #不快係数
     
   # csv ファイルから指定された時刻を読み込み. 配列化
-  ["iot-06", "iot-07", iot-08", "iot-09", "iot-10"].each do |myid|
+  ["iot-06", "iot-07", "iot-08", "iot-09", "iot-10"].each do |myid|
     srcdir = "/iotex/data_csv_10min/#{myid}/"
     temp_list[myid] = Array.new #温度
     humi_list[myid] = Array.new #湿度
@@ -92,7 +90,11 @@ miss = 999.9
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
 
-    plot time_list, temp_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3
+    plot [time_list["iot-06"], temp_list["iot-06"], using:'1:($2)', with:"lines", lc_rgb:"red", lw:2, title:"221講義室"],
+    [time_list["iot-07"], temp_list["iot-07"], using:'1:($2)', with:"lines", lc_rgb:"blue", lw:2, title:"222講義室"],
+    [time_list["iot-08"], temp_list["iot-08"], using:'1:($2)', with:"lines", lc_rgb:"green", lw:2, title:"223講義室"],
+    [time_list["iot-09"], temp_list["iot-09"], using:'1:($2)', with:"lines", lc_rgb:"yellow", lw:2, title:"224講義室"],
+    [time_list["iot-10"], temp_list["iot-10"], using:'1:($2)', with:"lines", lc_rgb:"black", lw:2, title:"225講義室"]
   end
 
   # 湿度グラフ作成 (各自で書くこと).
