@@ -29,7 +29,7 @@ srcdir = "/iotex/data_csv_10min/#{myid}/"
 (DateTime.parse("#{ARGV[2]}")..DateTime.now).select{|d| d.wday==0}.each do |time_from|
 # 公開ディレクトリの作成
 pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
-FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
+#FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
 FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir_temp )
 pubdir_humi = "#{pubdir}/humi/#{time_from.strftime("%Y-%m")}"
 FileUtils.mkdir_p( pubdir_humi ) until FileTest.exists?( pubdir_humi )
@@ -44,11 +44,12 @@ miss = 999.9
 ### 
 
 # 7, 30, 90, 120, 360 日の幅で描画
-[7,30,90,120,240,360].each do |range|
-  p "#{range} days"
+#[7,30,90,120,240,360].each do |range|
+#7.each do |range|
+  #p "#{range} days"
   
   # 描画範囲
-  time_from = DateTime.now - range
+  #time_from = DateTime.now + 7
   
   # ハッシュと配列の初期化
   time_list = Array.new #時刻
@@ -64,7 +65,7 @@ miss = 999.9
       time = DateTime.parse( "#{item[0]} JST" )
 
       # 指定された時刻より後のデータを取得.
-      if time >= time_from && time <= time_from+1 && time.min == 0
+      if time >= time_from && time <= time_from+7 && time.min == 0
         time_list.push( time )          # 時刻        
         temp_list.push( item[1].to_f )  # 温度
         humi_list.push( item[4].to_f )  # 湿度
@@ -72,6 +73,7 @@ miss = 999.9
       end
     end
   end
+   #next if temp_list.min == temp_list.max
   p "plot from #{time_list[0]} to #{time_list[-1]}"
   
   # 温度グラフ作成.
@@ -85,12 +87,12 @@ miss = 999.9
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir}/temp/#{myid}_temp_#{time_from.strftime("%Y%m%d")}days.png"
+    set output:   "#{pubdir_temp}/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
 
-    plot time_list, temp_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3
+    plot time_list, temp_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:2
   end
 
   # 湿度グラフ作成 (各自で書くこと).
@@ -104,12 +106,12 @@ miss = 999.9
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir}/humi/#{myid}_humi_#{time_from.strftime("%Y%m%d")}days.png"
+    set output:   "#{pubdir_humi}/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
 
-    plot time_list, humi_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3
+    plot time_list, humi_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:2
     end
 
   # 不快指数グラフ作成 (各自で書くこと).
@@ -124,13 +126,13 @@ miss = 999.9
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir}/didx/#{myid}_didx_#{time_from.strftime("%Y%m%d")}days.png"
+    set output:   "#{pubdir_didx}/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
 
-    plot time_list, didx_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3
+    plot time_list, didx_list, using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:2
     end
   
-end
+#end
 end
