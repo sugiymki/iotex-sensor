@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # coding: utf-8
 #
-# 表題: グラフ作成のためのスクリプト. CSV ファイル利用版.
-#       日曜日 1 日分の毎正時の値をプロットする. 
+# 表題: チームメンバーのセンサーデータを重ね書きした部屋同士のデータの比較図
+#       10分平均値のcsvファイルからを1週間毎のグラフを作成する. 
 #
 
 require 'csv'
@@ -15,19 +15,31 @@ require 'numo/gnuplot'
 ###
 
 # デバイス名
-myid = ARGV[0]
+#myid = ARGV[0]
+ourids = ["iot-xx","iot-yy","iot-zz","iot-ww"]
 
 # 公開ディレクトリ
-#pubdir = "/iotex/graph_1day/#{myid}"     # 本番
-pubdir = "/iotex/graph_1day/tmp/#{myid}"  # テスト用
+#pubdir = "/iotex/compare_1week/"     # 本番
+pubdir = "/iotex/compare_1week/test/"  # テスト用
 
+i=0
+for id in ourids
+   if i != 0 then
+	  pubdir += "_"
+   end
+   pubdir += id
+   i = 1
+end
 
 ###
 ### 初期化
 ###
 
 # データ置き場
-srcdir = "/iotex/data_csv_10min/#{myid}/"
+srcdirs = []
+for id in ourids
+   srcdirs.push("/iotex/data_csv_10min/#{id}")
+end
 
 # 欠損値
 miss = 999.9
@@ -38,7 +50,7 @@ miss = 999.9
 ###
 
 # 日曜 (wday=0) の日付を選ぶ
-(DateTime.parse("#{ARGV[2]}")..DateTime.now).select{|d| d.wday==0}.each do |time_from|  
+(DateTime.parse("#{ARGV[0]}")..DateTime.now).select{|d| d.wday==0}.each do |time_from|  
   
   # 公開ディレクトリの作成
   pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
@@ -56,7 +68,7 @@ miss = 999.9
   temp2_list = Array.new #温度
   
   # csv ファイルから指定された時刻を読み込み. 配列化
-  Dir.glob("#{srcdir}/*csv").sort.each do |csvfile|
+  Dir.glob("#{srcdirs[0]}/*csv").sort.each do |csvfile|
     CSV.foreach( csvfile ) do |item|
 
       # 時刻. DateTime オブジェクト化.
