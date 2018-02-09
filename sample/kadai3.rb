@@ -42,9 +42,9 @@ pubdir += id_dir
 ###
 
 # データ置き場
-srcdirs = Array.new
+srcdirs = Hash.new
 for id in ourids
-   srcdirs.push("/iotex/data_csv_10min/#{id}")
+   srcdirs[id] = "/iotex/data_csv_10min/#{id}"
 end
 
 # 欠損値
@@ -74,13 +74,13 @@ miss = 999.9
 
   for id in ourids
  	 # 配列の初期化 list={0:[],1:[],...,i:[]}
- 	 time_list[i] = Array.new #時刻
- 	 temp_list[i] = Array.new #温度
- 	 humi_list[i] = Array.new #湿度
- 	 didx_list[i] = Array.new #不快係数
+ 	 time_list[id] = Array.new #時刻
+ 	 temp_list[id] = Array.new #温度
+ 	 humi_list[id] = Array.new #湿度
+ 	 didx_list[id] = Array.new #不快係数
  	 
  	 # csv ファイルから指定された時刻を読み込み. 配列化
- 	 Dir.glob("#{srcdirs[i]}/*csv").sort.each do |csvfile|
+ 	 Dir.glob("#{srcdirs[id]}/*csv").sort.each do |csvfile|
  	   CSV.foreach( csvfile ) do |item|
 
  	     # 時刻. DateTime オブジェクト化.
@@ -88,15 +88,15 @@ miss = 999.9
 
  	     # 指定された時刻より後のデータを取得. 7 日分取り出す. 毎正時のみ. 
  	     if time >= time_from && time <= time_from + 7 && time.min == 0
- 	       time_list[i].push( time )          # 時刻        
- 	       temp_list[i].push( item[1].to_f )  # 温度
- 	       #temp2_list[i].push( item[2].to_f )  # 温度
- 	       humi_list[i].push( item[4].to_f )  # 湿度
- 	       didx_list[i].push( item[15].to_f ) # 不快係数
+ 	       time_list[id].push( time )          # 時刻        
+ 	       temp_list[id].push( item[1].to_f )  # 温度
+ 	       #temp2_list[id].push( item[2].to_f )  # 温度
+ 	       humi_list[id].push( item[4].to_f )  # 湿度
+ 	       didx_list[id].push( item[15].to_f ) # 不快係数
  	     end
  	   end
  	 end
- 	 p "plot from #{time_list[ourids[0]]} to #{time_list[ourids[0]][-1]}"
+ 	 p "plot from #{time_list[id][0]} to #{time_list[id][-1]}"
   end
   next if temp_list[ourids[0]].min == temp_list[ourids[0]].max
     
