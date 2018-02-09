@@ -25,3 +25,4 @@ http://www.gfd-dennou.org/arch/sugiyama/IoTeX_2017/lecture-note_10-1.htm.ja
 
 
 totyuu(add_j1432)
+kanpeki(j1432_kadai3)
