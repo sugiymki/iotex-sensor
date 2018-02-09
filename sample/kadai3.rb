@@ -16,8 +16,9 @@ require 'numo/gnuplot'
 
 # デバイス名
 #myid = ARGV[0]
-ourids = ["iot-xx","iot-yy","iot-zz","iot-ww"]
-
+ourids = ["iot-45","iot-14","iot-34","iot-44"]
+room_names = { ourids[0]=>"235講義室", ourids[1]=>"杉山Lab",\
+               ourids[2]=>"421講義室", ourids[3]=>"231講義室後ろ"}
 # デバイスに対応した線の色
 colors = {ourids[0]=>"red",ourids[1]=>"blue",ourids[2]=>"green",ourids[3]=>"yellow"}
 
@@ -65,6 +66,11 @@ miss = 999.9
   FileUtils.mkdir_p( pubdir_humi ) until FileTest.exists?( pubdir_humi )
   FileUtils.mkdir_p( pubdir_didx ) until FileTest.exists?( pubdir_didx )
 
+  time_list = Array.new
+  temp_list = Array.new
+  humi_list = Array.new
+  didx_list = Array.new
+
   (0..ourids.length).each do |i|
  	 # 配列の初期化
  	 time_list[i] = Array.new #時刻
@@ -83,7 +89,7 @@ miss = 999.9
  	     if time >= time_from && time <= time_from + 7 && time.min == 0
  	       time_list[i].push( time )          # 時刻        
  	       temp_list[i].push( item[1].to_f )  # 温度
- 	       temp2_list[i].push( item[2].to_f )  # 温度
+ 	       #temp2_list[i].push( item[2].to_f )  # 温度
  	       humi_list[i].push( item[4].to_f )  # 湿度
  	       didx_list[i].push( item[15].to_f ) # 不快係数
  	     end
@@ -107,32 +113,46 @@ miss = 999.9
     set output:    "#{pubdir_temp}/#{id_dir}_temp_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set key: "box"  #凡例あり
-    set key: "top" "right" #凡例あり
+    set key: "right" #凡例あり
     
-	(0..ourids.length).each do |i|
-    	plot time_list[i], temp_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:ourids[i]
-	end
+    p "start gnuplot-temp"
+    #(0..ourids.length).each do |i|
+    #    plot [time_list[i], temp_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]]
+    #end
+    plot [time_list[0], temp_list[0], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
+         [time_list[1], temp_list[1], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
+         [time_list[2], temp_list[2], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
+         [time_list[3], temp_list[3], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
+    p "finish gnuplot-temp"
   end
 
   # 湿度グラフ作成
-  Numo.gnuplot do
+  numo.gnuplot do
     #    debug_on
     set title:     "#{id_dir}比較 (湿度)"
     set ylabel:    "humidity (%)"
     set xlabel:    "time"
     set xdata:     "time"
-    set timefmt_x: "%Y-%m-%dT%H:%M:%S+00:00"
-    set format_x:  "%m/%d %H:%M"
+    set timefmt_x: "%y-%m-%dt%h:%m:%s+00:00"
+    set format_x:  "%m/%d %h:%m"
     set xtics:     "rotate by -60"
     set terminal:  "png"
     set output:    "#{pubdir_humi}/#{id_dir}_humi_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set key: "box"  #凡例あり
-    set key: "top" "right" #凡例あり
+    set key: "right"  #凡例あり
 
-	(0..ourids.length).each do |i|
-    	plot time_list[i], humi_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:ourids[i]
-	end
+    #(0..ourids.length).each do |i|
+    #    plot time_list[i], humi_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]
+    #end
+
+    p "start gnuplot-humi"
+    plot [time_list[0], humi_list[0], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
+         [time_list[1], humi_list[1], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
+         [time_list[2], humi_list[2], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
+         [time_list[3], humi_list[3], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
+    p "finish gnuplot-humi"
+
   end
 
   # 不快指数グラフ作成
@@ -149,11 +169,17 @@ miss = 999.9
     set output:    "#{pubdir_didx}/#{id_dir}_didx_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set key: "box"  #凡例あり
-    set key: "top" "right" #凡例あり
+    set key: "right"  #凡例あり
 
-	(0..ourids.length).each do |i|
-    	plot time_list[i], didx_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:ourids[i]
-	end
+    p "start gnuplot-didx"
+    #(0..ourids.length).each do |i|
+    #    plot time_list[i], didx_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]
+    #end
+    plot [time_list[0], didx_list[0], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
+         [time_list[1], didx_list[1], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
+         [time_list[2], didx_list[2], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
+         [time_list[3], didx_list[3], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
+    p "finish gnuplot-didx"
   end
   
 end
