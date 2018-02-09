@@ -85,7 +85,7 @@ FileUtils.mkdir_p(pubdir_didx) until FileTest.exists?( pubdir_didx )
   # 温度グラフ作成.
   Numo.gnuplot do
     #    debug_on
-    set title:    "{ARGV[1]}(温度)" 
+    set title:    "#{ARGV[1]}(温度)" 
     set ylabel:   "temperature (C)"
     set xlabel:   "time"
     set xdata:    "time"
@@ -103,7 +103,7 @@ FileUtils.mkdir_p(pubdir_didx) until FileTest.exists?( pubdir_didx )
 
   # 湿度グラフ作成 (各自で書くこと).
   Numo.gnuplot do
-	set title: "{ARGV[1]} (湿度)"
+	set title: "#{ARGV[1]} (湿度)"
 	set ylabel: "humidity (%)"
 	set xlabel: "time"
 	set xdata: "time"
@@ -119,7 +119,7 @@ FileUtils.mkdir_p(pubdir_didx) until FileTest.exists?( pubdir_didx )
 
  # 不快指数グラフ作成（各自で書くこと）.
   Numo.gnuplot do
-	set title: "{ARGV[1]}(湿度)"
+	set title: "#{ARGV[1]}(湿度)"
         set ylabel: "didx (num)"
         set xlabel: "time"
         set xdata: "time"
