@@ -66,13 +66,14 @@ miss = 999.9
   FileUtils.mkdir_p( pubdir_humi ) until FileTest.exists?( pubdir_humi )
   FileUtils.mkdir_p( pubdir_didx ) until FileTest.exists?( pubdir_didx )
 
-  time_list = Array.new
-  temp_list = Array.new
-  humi_list = Array.new
-  didx_list = Array.new
+  # ハッシュの初期化 list={}
+  time_list = Hash.new
+  temp_list = Hash.new
+  humi_list = Hash.new
+  didx_list = Hash.new
 
-  (0..ourids.length).each do |i|
- 	 # 配列の初期化
+  for id in ourids
+ 	 # 配列の初期化 list={0:[],1:[],...,i:[]}
  	 time_list[i] = Array.new #時刻
  	 temp_list[i] = Array.new #温度
  	 humi_list[i] = Array.new #湿度
@@ -95,9 +96,9 @@ miss = 999.9
  	     end
  	   end
  	 end
- 	 p "plot from #{time_list[0]} to #{time_list[-1]}"
+ 	 p "plot from #{time_list[ourids[0]]} to #{time_list[ourids[0]][-1]}"
   end
-  next if temp_list[0].min == temp_list[0].max
+  next if temp_list[ourids[0]].min == temp_list[ourids[0]].max
     
   # 温度グラフ作成.
   Numo.gnuplot do
@@ -119,10 +120,10 @@ miss = 999.9
     #(0..ourids.length).each do |i|
     #    plot [time_list[i], temp_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]]
     #end
-    plot [time_list[0], temp_list[0], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
-         [time_list[1], temp_list[1], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
-         [time_list[2], temp_list[2], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
-         [time_list[3], temp_list[3], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
+    plot [time_list[ourids[0]], temp_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
+         [time_list[ourids[1]], temp_list[ourids[1]], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
+         [time_list[ourids[2]], temp_list[ourids[2]], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
+         [time_list[ourids[3]], temp_list[ourids[3]], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
     p "finish gnuplot-temp"
   end
 
@@ -147,10 +148,10 @@ miss = 999.9
     #end
 
     p "start gnuplot-humi"
-    plot [time_list[0], humi_list[0], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
-         [time_list[1], humi_list[1], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
-         [time_list[2], humi_list[2], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
-         [time_list[3], humi_list[3], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
+    plot [time_list[ourids[0]], humi_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
+         [time_list[ourids[1]], humi_list[ourids[1]], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
+         [time_list[ourids[2]], humi_list[ourids[2]], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
+         [time_list[ourids[3]], humi_list[ourids[3]], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
     p "finish gnuplot-humi"
 
   end
@@ -175,10 +176,10 @@ miss = 999.9
     #(0..ourids.length).each do |i|
     #    plot time_list[i], didx_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]
     #end
-    plot [time_list[0], didx_list[0], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
-         [time_list[1], didx_list[1], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
-         [time_list[2], didx_list[2], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
-         [time_list[3], didx_list[3], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
+    plot [time_list[ourids[0]], didx_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[0], lw:2, title:room_names[ourids[0]]],
+         [time_list[ourids[1]], didx_list[ourids[1]], using:'1:($2)', with:"linespoints", lc_rgb:colors[1], lw:2, title:room_names[ourids[1]]],
+         [time_list[ourids[2]], didx_list[ourids[2]], using:'1:($2)', with:"linespoints", lc_rgb:colors[2], lw:2, title:room_names[ourids[2]]],
+         [time_list[ourids[3]], didx_list[ourids[3]], using:'1:($2)', with:"linespoints", lc_rgb:colors[3], lw:2, title:room_names[ourids[3]]]
     p "finish gnuplot-didx"
   end
   
