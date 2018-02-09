@@ -27,7 +27,7 @@ if myid.nil? || roomName.nil? || date.nil?
   print("\n引数が足りません。\n")
   print("ruby kadai1.rb ”センサーID” ”教室名” ”描画開始時刻” で入力してください。 \n")
   print("（実行例）\n")
-  print("ruby kadai1.rb“”iot-48”“”223 教室” ”2018-01-01 00:00:00 JST” \n\n")
+  print("ruby kadai1.rb“”iot-45”“”235 教室” ”2018-01-01 00:00:00 JST” \n\n")
   exit!
 end
   
@@ -47,13 +47,17 @@ pubdir = "/iotex/graph_1day/#{myid}"
 srcdir = "/iotex/data_csv_10min/#{myid}/"
 
 # *
-(DateTime.parse('#{ARGV{2}}')..DateTime.now).each do |time_from|
+(DateTime.parse(date)..DateTime.now).each do |time_from|
+
+p "date setting OK"
 
 # 公開ディレクトリの作成
 #FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
 # *
-pubdir_temp = "#{pubdir}/temp/#{time_from.strtime("%Y-%m")}"
-FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir )
+pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
+FileUtils.mkdir_p( pubdir_temp ) until FileTest.exist?( pubdir_temp )
+
+p "pubric directory setting OK"
 
 # 欠損値
 miss = 999.9
@@ -63,8 +67,11 @@ miss = 999.9
 ### データの取得とグラフの作成
 ### 
 
+p "prot start"
+
 # 7, 30, 90, 120, 360 日の幅で描画
-[7,30,90,120,240,360].each do |range|
+#* 1日の描画
+[1].each do |range|
   p "#{range} days"
   
   # 描画範囲
@@ -85,7 +92,7 @@ miss = 999.9
 
       # 指定された時刻より後のデータを取得.
       # 1日分のデータを取得 *
-      if time >= time_from && time <= time_from + 1 # 1日分にする？ *
+      if time >= time_from && time <= time_from + 1 && time.min == 0 # 1日分にする？ *
         time_list.push( time )          # 時刻        
         temp_list.push( item[1].to_f )  # 温度
         humi_list.push( item[4].to_f )  # 湿度
