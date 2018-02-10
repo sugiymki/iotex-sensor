@@ -27,7 +27,7 @@ if myid.nil? || roomName.nil? || date.nil?
   print("\n引数が足りません。\n")
   print("ruby kadai1.rb ”センサーID” ”教室名” ”描画開始時刻” で入力してください。 \n")
   print("（実行例）\n")
-  print("ruby kadai1.rb“”iot-48”“”223 教室” ”2018-01-01 00:00:00 JST” \n\n")
+  print("ruby kadai1.rb“”iot-45”“”235 教室” ”2018-01-01 00:00:00 JST” \n\n")
   exit!
 end
   
@@ -47,13 +47,22 @@ pubdir = "/iotex/graph_1day/#{myid}"
 srcdir = "/iotex/data_csv_10min/#{myid}/"
 
 # *
-(DateTime.parse('#{ARGV{2}}')..DateTime.now).each do |time_from|
+#(DateTime.parse(date)..DateTime.now).each do |time_from|
+
+p "date setting OK"
 
 # 公開ディレクトリの作成
 #FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
 # *
-pubdir_temp = "#{pubdir}/temp/#{time_from.strtime("%Y-%m")}"
-FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir )
+(DateTime.parse(date)..DateTime.now).each do |time_from|
+pubdir_1day = "#{pubdir}/1day/#{time_from.strftime("%Y-%m")}"
+FileUtils.mkdir_p( pubdir_1day ) until FileTest.exist?( pubdir_1day )
+#pubdir_humi = "#{pubdir}/humi/#{time_from.strftime("%Y-%m")}"
+#FileUtils.mkdir_p( pubdir_humi ) until FileTest.exist?( pubdir_humi )
+#pubdir_didx = "#{pubdir}/didix/#{time_from.strftime("%Y-%m")}"
+#FileUtils.mkdir_p( pubdir_didx ) until FileTest.exist?( pubdir_didx )
+
+p "pubric directory setting OK"
 
 # 欠損値
 miss = 999.9
@@ -63,12 +72,15 @@ miss = 999.9
 ### データの取得とグラフの作成
 ### 
 
+p "prot start"
+
 # 7, 30, 90, 120, 360 日の幅で描画
-[7,30,90,120,240,360].each do |range|
-  p "#{range} days"
+#* 1日の描画
+#[1].each do |range|
+ # p "#{range} days"
   
   # 描画範囲
-  time_from = DateTime.now - range
+  #time_from = DateTime.now - range
   
   # ハッシュと配列の初期化
   time_list = Array.new #時刻
@@ -94,21 +106,22 @@ miss = 999.9
     end
   end
 
-  next if temp_list.min == temp_list.max # 全部欠損の場合をスキップ *
   p "plot from #{time_list[0]} to #{time_list[-1]}"
+  next if temp_list.min == temp_list.max # 全部欠損の場合をスキップ *
 
   #gnuplotで作図
   # 温度グラフ作成.
   Numo.gnuplot do
     #    debug_on
-    set ylabel:   "#{ARGV[1]}（温度）"
+    set title:   "#{ARGV[1]}（温度）"
+    set ylabel:   "temperature (C)"
     set xlabel:   "time"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_temp}/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
+    set output:   "#{pubdir_1day}/#{myid}_tamp_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
@@ -119,14 +132,15 @@ miss = 999.9
   # 湿度グラフ作成 (各自で書くこと).
   Numo.gnuplot do
     #    debug_on
-    set ylabel:   "#{ARGV[1]}（湿度）"
+    set title:    "#{ARGV[1]}（湿度）"
+    set ylabel:   "humidity (%)"
     set xlabel:   "time"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_temp}/#{myid}_humi_#{time_from.strftime("%Y%m%d")}.png"
+    set output:   "#{pubdir_1day}/#{myid}_humi_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
@@ -137,23 +151,19 @@ miss = 999.9
   # 不快指数グラフ作成 (各自で書くこと).
   Numo.gnuplot do
     #    debug_on
-    set ylabel:   "#{ARGV[1]}（不快指数）"
+    set title:    "#{ARGV[1]}（不快指数）"
+    set ylabel:   "disconfort index"
     set xlabel:   "time"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_temp}/#{myid}_didx_#{time_from.strftime("%Y%m%d")}.png"
+    set output:   "#{pubdir_1day}/#{myid}_didx_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
 
     plot time_list, didx_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:3
   end
-
-  
-end
-
-#*
 end
