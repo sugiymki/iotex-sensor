@@ -23,8 +23,8 @@ room_names = { ourids[0]=>"235講義室", ourids[1]=>"杉山Lab",\
 colors = {ourids[0]=>"red",ourids[1]=>"blue",ourids[2]=>"green",ourids[3]=>"yellow"}
 
 # 公開ディレクトリ
-#pubdir = "/iotex/compare_1week/"     # 本番
-pubdir = "/iotex/compare_1week/test/"  # テスト用
+pubdir = "/iotex/compare_1week/"     # 本番
+#pubdir = "/iotex/compare_1week/test/"  # テスト用
 
 i=0
 id_dir = ""
