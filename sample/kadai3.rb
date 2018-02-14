@@ -117,15 +117,15 @@ miss = 999.9
     set key: "right" #凡例あり
     
     p "start gnuplot-temp"
-    p colors[ourids[0]]
-    #(0..ourids.length).each do |i|
-    #    plot [time_list[id], temp_list[id], using:'1:($2)', with:"linespoints", lc_rgb:colors[id], lw:2, title:room_names[ourids[i]]]
-    #end
-    plot [time_list[ourids[0]], temp_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[0]], lw:2, title:room_names[ourids[0]]],
-         [time_list[ourids[1]], temp_list[ourids[1]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[1]], lw:2, title:room_names[ourids[1]]],
-         [time_list[ourids[2]], temp_list[ourids[2]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[2]], lw:2, title:room_names[ourids[2]]],
-         [time_list[ourids[3]], temp_list[ourids[3]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[3]], lw:2, title:room_names[ourids[3]]]
+
+    plot_data=Array.new
+    for id in ourids
+    	plot_data.push([time_list[id], temp_list[id], using:'1:($2)', with:"linespoints", lc_rgb:colors[id], lw:2, title:room_names[id]])
+    end
+    plot plot_data[0],plot_data[1],plot_data[2],plot_data[3]
+
     p "finish gnuplot-temp"
+
   end
 
   # 湿度グラフ作成
@@ -144,15 +144,14 @@ miss = 999.9
     set key: "box"  #凡例あり
     set key: "right"  #凡例あり
 
-    #(0..ourids.length).each do |i|
-    #    plot time_list[i], humi_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]
-    #end
-
     p "start gnuplot-humi"
-    plot [time_list[ourids[0]], humi_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[0]], lw:2, title:room_names[ourids[0]]],
-         [time_list[ourids[1]], humi_list[ourids[1]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[1]], lw:2, title:room_names[ourids[1]]],
-         [time_list[ourids[2]], humi_list[ourids[2]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[2]], lw:2, title:room_names[ourids[2]]],
-         [time_list[ourids[3]], humi_list[ourids[3]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[3]], lw:2, title:room_names[ourids[3]]]
+
+    plot_data=Array.new
+    for id in ourids
+    	plot_data.push([time_list[id], humi_list[id], using:'1:($2)', with:"linespoints", lc_rgb:colors[id], lw:2, title:room_names[id]])
+    end
+    plot plot_data[0],plot_data[1],plot_data[2],plot_data[3]
+
     p "finish gnuplot-humi"
 
   end
@@ -174,14 +173,15 @@ miss = 999.9
     set key: "right"  #凡例あり
 
     p "start gnuplot-didx"
-    #(0..ourids.length).each do |i|
-    #    plot time_list[i], didx_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]
-    #end
-    plot [time_list[ourids[0]], didx_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[0]], lw:2, title:room_names[ourids[0]]],
-         [time_list[ourids[1]], didx_list[ourids[1]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[1]], lw:2, title:room_names[ourids[1]]],
-         [time_list[ourids[2]], didx_list[ourids[2]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[2]], lw:2, title:room_names[ourids[2]]],
-         [time_list[ourids[3]], didx_list[ourids[3]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[3]], lw:2, title:room_names[ourids[3]]]
+
+    plot_data=Array.new
+    for id in ourids
+        plot_data.push([time_list[id], didx_list[id], using:'1:($2)', with:"linespoints", lc_rgb:colors[id], lw:2, title:room_names[id]])
+    end
+    plot plot_data[0],plot_data[1],plot_data[2],plot_data[3]
+
     p "finish gnuplot-didx"
+
   end
   
 end
