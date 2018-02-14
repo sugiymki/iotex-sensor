@@ -117,6 +117,7 @@ miss = 999.9
     set key: "right" #凡例あり
     
     p "start gnuplot-temp"
+    p colors[ourids[0]]
     #(0..ourids.length).each do |i|
     #    plot [time_list[id], temp_list[id], using:'1:($2)', with:"linespoints", lc_rgb:colors[id], lw:2, title:room_names[ourids[i]]]
     #end
@@ -128,14 +129,14 @@ miss = 999.9
   end
 
   # 湿度グラフ作成
-  numo.gnuplot do
+  Numo.gnuplot do
     #    debug_on
     set title:     "#{id_dir}比較 (湿度)"
     set ylabel:    "humidity (%)"
     set xlabel:    "time"
     set xdata:     "time"
-    set timefmt_x: "%y-%m-%dt%h:%m:%s+00:00"
-    set format_x:  "%m/%d %h:%m"
+    set timefmt_x: "%Y-%m-%dT%H:%M:%S+00:00"
+    set format_x:  "%m/%d %H:%M"
     set xtics:     "rotate by -60"
     set terminal:  "png"
     set output:    "#{pubdir_humi}/#{id_dir}_humi_#{time_from.strftime("%Y%m%d")}.png"
@@ -176,7 +177,7 @@ miss = 999.9
     #(0..ourids.length).each do |i|
     #    plot time_list[i], didx_list[i], using:'1:($2)', with:"linespoints", lc_rgb:colors[i], lw:2, title:room_names[ourids[i]]
     #end
-    plot [time_list[ourids[0]], didx_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[0], lw:2, title:room_names[ourids[0]]],
+    plot [time_list[ourids[0]], didx_list[ourids[0]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[0]], lw:2, title:room_names[ourids[0]]],
          [time_list[ourids[1]], didx_list[ourids[1]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[1]], lw:2, title:room_names[ourids[1]]],
          [time_list[ourids[2]], didx_list[ourids[2]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[2]], lw:2, title:room_names[ourids[2]]],
          [time_list[ourids[3]], didx_list[ourids[3]], using:'1:($2)', with:"linespoints", lc_rgb:colors[ourids[3]], lw:2, title:room_names[ourids[3]]]
