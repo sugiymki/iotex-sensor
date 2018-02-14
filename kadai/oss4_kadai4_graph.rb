@@ -17,7 +17,7 @@ require 'numo/gnuplot'
 myid =ARGV[0] 
 
 # 公開ディレクトリ
-pubdir = "iotex/graph-1month/"#{myid}" 
+pubdir = "/iotex/graph_1month/#{myid}" 
 
 # データ置き場
 srcdir = "/home/j1412/public_html/data_csv_1day"
@@ -77,11 +77,11 @@ miss = 999.9
       time = DateTime.parse( "#{item[0]} 00:00:00 JST" ) # 時刻
         
       # 指定期間のデータのみ配列化 (1 日毎の値)
-      if time >= time_from && time <= time_from + 1 && time.min == 0
+      if time.month==time_from.month && time>=time_from 
         time_list.push( time )          # 時刻        
-        temp_list.push( item[1].to_f )  # 温度
-        humi_list.push( item[4].to_f )  # 湿度
-        didx_list.push( item[15].to_f ) # 不快係数
+        temp_list[op].push( item[1].to_f )  # 温度
+        humi_list[op].push( item[4].to_f )  # 湿度
+        didx_list[op].push( item[15].to_f ) # 不快係数
       end
     end
   end
@@ -107,7 +107,7 @@ miss = 999.9
     set :datafile, :missing, "999.9"
     
     plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
-     [time_list, temp_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
+         [time_list, temp_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
          [time_list, temp_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
          [time_list, temp_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
 end
@@ -127,7 +127,7 @@ end
     set :datafile, :missing, "999.9"
     
     plot [time_list, humi_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
-     [time_list, humi_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
+         [time_list, humi_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
          [time_list, humi_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
          [time_list, humi_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
 end
@@ -146,7 +146,7 @@ end
     set :datafile, :missing, "999.9"
     
     plot [time_list, didx_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
-     [time_list, didx_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
+         [time_list, didx_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
          [time_list, didx_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
          [time_list, didx_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
 end
