@@ -114,26 +114,26 @@ end
 
 
   Numo.gnuplot do
-    set title:    "#{ARGV[1]} (温度)"
-    set ylabel:   "temperature (C)"
+    set title:    "#{ARGV[1]} (湿度)"
+    set ylabel:   "humidity(%)"
     set xlabel:   "time"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+09:00"
     set format_x: "%Y/%m/%d"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_temp}/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
+    set output:   "#{pubdir_humi}/#{myid}_humi_#{time_from.strftime("%Y%m%d")}.png"
     set key: "box"
     set :datafile, :missing, "999.9"
     
-    plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
-     [time_list, temp_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
-         [time_list, temp_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
-         [time_list, temp_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
+    plot [time_list, humi_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
+     [time_list, humi_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
+         [time_list, humi_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
+         [time_list, humi_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
 end
 
   Numo.gnuplot do
-    set title:    "#{ARGV[1]} (温度)"
+    set title:    "#{ARGV[1]} (不快係数)"
     set ylabel:   "temperature (C)"
     set xlabel:   "time"
     set xdata:    "time"
@@ -141,13 +141,13 @@ end
     set format_x: "%Y/%m/%d"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_temp}/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
+    set output:   "#{pubdir_didx}/#{myid}_didx_#{time_from.strftime("%Y%m%d")}.png"
     set key: "box"
     set :datafile, :missing, "999.9"
     
-    plot [time_list, temp_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
-     [time_list, temp_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
-         [time_list, temp_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
-         [time_list, temp_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
+    plot [time_list, didx_list["mean"], using:'1:($2)', with:"linespoints", lc_rgb:"green", lw:3, title:"mean"],
+     [time_list, didx_list["mean2"], using:'1:($2)', with:"linespoints", lc_rgb:"yellow", lw:3, title:"mean2"],
+         [time_list, didx_list["min"],  using:'1:($2)', with:"linespoints", lc_rgb:"blue",  lw:3, title:"min "],
+         [time_list, didx_list["max"],  using:'1:($2)', with:"linespoints", lc_rgb:"red",   lw:3, title:"max "]
 end
 end
