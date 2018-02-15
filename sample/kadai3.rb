@@ -99,7 +99,7 @@ end
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir1}/#{md}_temp_#{time_from.mon}_#{time_from.day}.png"
+    set output:   "#{pubdir1}/#{md}_temp_#{time_from.mon}-#{time_from.day}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
@@ -120,7 +120,7 @@ end
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir2}/#{md}_humi_#{time_from.mon}_#{time_from.day}.png"
+    set output:   "#{pubdir2}/#{md}_humi_#{time_from.mon}-#{time_from.day}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
@@ -142,7 +142,7 @@ end
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir3}/#{md}_didx_#{time_from.mon}_#{time_from.mday}.png"
+    set output:   "#{pubdir3}/#{md}_didx_#{time_from.mon}-#{time_from.mday}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
