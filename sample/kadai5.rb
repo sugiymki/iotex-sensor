@@ -14,7 +14,7 @@ require 'numo/gnuplot'
 ###
 
 # デバイス名
-myid = "iot-32" 
+myid = ARGV[0] 
 
 # 公開ディレクトリ
 pubdir = "/home/j1417/public_html/table-csv_with-1month/"
