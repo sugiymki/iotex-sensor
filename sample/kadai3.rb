@@ -16,8 +16,8 @@ require 'numo/gnuplot'
 
 # デバイス名
 #myid = ARGV[0]
-ourids = ["iot-45","iot-14","iot-34","iot-44"]
-room_names = { ourids[0]=>"235講義室", ourids[1]=>"杉山Lab",\
+ourids = ["iot-45","iot-40","iot-34","iot-44"]
+room_names = { ourids[0]=>"235講義室", ourids[1]=>"3T1F階段前",\
                ourids[2]=>"421講義室", ourids[3]=>"231講義室後ろ"}
 # デバイスに対応した線の色
 colors = {ourids[0]=>"red",ourids[1]=>"blue",ourids[2]=>"green",ourids[3]=>"yellow"}
