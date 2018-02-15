@@ -84,7 +84,7 @@ miss = 999.9
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_temp}/iot-28_iot-27_iot-31_iot-30_iot-29_temp_#{time_from.strftime("%Y")}.png"
+    set output:   "#{pubdir_temp}/iot-28_iot-27_iot-31_iot-30_iot-29_temp_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     #set :nokey # 凡例なし
      set key: "box" #凡例あり
@@ -106,7 +106,7 @@ miss = 999.9
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_humi}/iot-28_iot-27_iot-31_iot-30_iot-29_humi_#{time_from.strftime("%Y")}.png"
+    set output:   "#{pubdir_humi}/iot-28_iot-27_iot-31_iot-30_iot-29_humi_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     #set :nokey # 凡例なし
      set key: "box" #凡例あり
@@ -128,7 +128,7 @@ miss = 999.9
     set format_x: "%m/%d %H:%M"
     set xtics:    "rotate by -60"
     set terminal: "png"
-    set output:   "#{pubdir_didx}/iot-28_iot-27_iot-31_iot-30_iot-29_didx_#{time_from.strftime("%Y")}.png"
+    set output:   "#{pubdir_didx}/iot-28_iot-27_iot-31_iot-30_iot-29_didx_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     #set :nokey # 凡例なし
      set key: "box" #凡例あり
