@@ -100,8 +100,8 @@ while (time_list[idx0] + 1 < time_list[-1]) do
 
   # 配列初期化
   time0  = time_list[idx0]
-  mean   = Array.new( num, miss )  # 欠損値
-  mean2   = Array.new( num, miss )  # 欠損値
+  mean   = Array.new( num, miss )  # 欠損値#1日の平均
+  mean2   = Array.new( num, miss )  # 欠損値#9～16時の平均
   min    = Array.new( num, miss )  # 欠損値
   max    = Array.new( num, miss )  # 欠損値
   stddev = Array.new( num, miss )  # 欠損値

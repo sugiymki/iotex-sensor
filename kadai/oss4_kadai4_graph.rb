@@ -58,7 +58,7 @@ miss = 999.9
   FileUtils.mkdir_p( pubdir_didx ) until FileTest.exists?( pubdir_didx )
   
   # 配列の初期化
-  ops = ["mean","mean2", "min", "max"]
+  ops = ["mean","mean2", "min", "max"]#mean2は9～16時の平均
   time_list = Array.new
   temp_list = Hash.new
   humi_list = Hash.new
@@ -68,7 +68,7 @@ miss = 999.9
     
     # 初期化
     time_list     = Array.new
-    temp_list[op] = Array.new
+    temp_list[op] = Array.new#配列で読み込む
     humi_list[op] = Array.new
     didx_list[op] = Array.new
 
