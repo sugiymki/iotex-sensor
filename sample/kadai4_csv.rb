@@ -14,7 +14,7 @@ require 'fileutils'
 ###
 
 # デバイス名
-myid = "iot-31"  
+myid = ARGV[0]  
 
 # 公開ディレクトリ
 pubdir = "/home/j1431/public_html/data_csv_1day"
@@ -27,10 +27,19 @@ pubdir = "/home/j1431/public_html/data_csv_1day"
 # データ置き場
 srcdir = "/iotex/data_csv_10min/#{myid}/"
 
+
 # 公開ディレクトリの作成
 FileUtils.rm_rf(   pubdir ) if    FileTest.exists?( pubdir )
 FileUtils.mkdir_p( pubdir ) until FileTest.exists?( pubdir )
 
+#pubdir_temp = "#{pubdir}/temp/#{time_from.strftime("%Y-%m")}"
+#FileUtils.mkdir_p( pubdir_temp ) until FileTest.exists?( pubdir_temp )
+
+#pubdir_humi = "#{pubdir}/humi/#{time_from.strftime("%Y-%m")}"
+#FileUtils.mkdir_p( pubdir_humi ) until FileTest.exists?( pubdir_humi )
+
+#pubdir_didx = "#{pubdir}/didx/#{time_from.strftime("%Y-%m")}"
+#FileUtils.mkdir_p( pubdir_didx ) until FileTest.exists?( pubdir_didx )
 # 欠損値
 miss = 999.9
 
@@ -84,23 +93,18 @@ end
 
 # 初期化
 count = 24 # 24 時間
-count1 = 7  #7時間
+#count1 = 7  #7時間
 # 平均を取る開始時刻の添字. 時刻が 00:00:00 となるよう調整. 
 time0= DateTime.new(
   time_list[0].year, time_list[0].month, time_list[0].day + 1,
   0, 0, 0, "JST"
 )
 
-time1= DateTime.new(
-  time_list[0].year, time_list[0].month, time_list[0].day + 1,
-  9, 0, 0, "JST"
-)
-
 idx0 = time_list.index( time0 )
-idx3 = time_list.index( time1 )
+#idx3 = time_list.index( time1 )
 # 平均を取る終了時刻の添字
 idx1 = idx0 + count
-idx4 = idx3 + count1
+#idx4 = idx3 + count1
 # 時刻をずらしながら 1 日の統計量を作成する. 
 while (time_list[idx0] + 1 < time_list[-1]) do 
 
@@ -121,7 +125,7 @@ while (time_list[idx0] + 1 < time_list[-1]) do
   unless ( idx2 )
     num.times do |i|
       mean[i]  = vars_list_narray[i][idx0+1..idx1].mean(0)
-      mean1[i] = vars_list_narray[i][idx3+1..idx4].mean(0)
+      mean1[i] = vars_list_narray[i][idx0+9..idx0+16].mean(0)
       min[i]   = vars_list_narray[i][idx0+1..idx1].min(0)
       max[i]   = vars_list_narray[i][idx0+1..idx1].max(0)
     end
@@ -133,7 +137,7 @@ while (time_list[idx0] + 1 < time_list[-1]) do
   csv.close
 
   csv = open("#{pubdir}/#{myid}_mean1.csv", "a")
-  csv.puts "#{time1.strftime("%Y/%m/%d")},#{mean1.join(',')},\n"
+  csv.puts "#{time0.strftime("%Y/%m/%d")},#{mean1.join(',')},\n"
   csv.close
 
   # 最小・最大・標準偏差・中央値のファイル出力
