@@ -101,8 +101,8 @@ end
     set terminal: "png"
     set output:   "#{pubdir1}/#{md}_temp_#{time_from.mon}-#{time_from.day}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
-    set :nokey # 凡例なし
-    # set key: "box" #凡例あり
+   # set :nokey # 凡例なし
+    set key: "box" #凡例あり
 
     plot [time_list["iot-15"], temp_list["iot-15"], using:'1:($2)', with:"lines", lc_rgb:"green", lw:3,title:"234講義室(4組)"],
      [time_list["iot-16"], temp_list["iot-16"], using:'1:($2)', with:"lines", lc_rgb:"red", lw:3,title:"235講義室(5組)前"],
@@ -122,8 +122,8 @@ end
     set terminal: "png"
     set output:   "#{pubdir2}/#{md}_humi_#{time_from.mon}-#{time_from.day}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
-    set :nokey # 凡例なし
-    # set key: "box" #凡例あり
+    #set :nokey # 凡例なし
+    set key: "box" #凡例あり
 
     plot [time_list["iot-15"], humi_list["iot-15"], using:'1:($2)', with:"lines", lc_rgb:"green", lw:3,title:"234講義室(4組)"],
      [time_list["iot-16"], humi_list["iot-16"], using:'1:($2)', with:"lines", lc_rgb:"red", lw:3,title:"235講義室(5組)前"],
@@ -144,8 +144,8 @@ end
     set terminal: "png"
     set output:   "#{pubdir3}/#{md}_didx_#{time_from.mon}-#{time_from.mday}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
-    set :nokey # 凡例なし
-    # set key: "box" #凡例あり
+    #set :nokey # 凡例なし
+    set key: "box" #凡例あり
 
     plot [time_list["iot-15"], didx_list["iot-15"], using:'1:($2)', with:"lines", lc_rgb:"green", lw:3,title:"234講義室(4組)"],
      [time_list["iot-16"], didx_list["iot-16"], using:'1:($2)', with:"lines", lc_rgb:"red", lw:3,title:"235講義室(5組)前"],
