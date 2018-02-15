@@ -14,8 +14,8 @@ require 'numo/gnuplot'
 myid = ARGV[0]
 
 # 公開ディレクトリ
-#pubdir = "/iotex/graph_1week/#{myid}"     # 本番
-pubdir = "/iotex/graph_1week/tmp/#{myid}"  # テスト用
+pubdir = "/iotex/graph_1week/#{myid}"     # 本番
+#pubdir = "/iotex/graph_1week/tmp/#{myid}"  # テスト用
 
 
 ###
