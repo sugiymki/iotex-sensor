@@ -5,6 +5,7 @@
 #
 # 課題1
 # 10分平均値のCSVファイルから1日のグラフ作成
+# 引数が足りない時のエラー処理を追加
 
 require 'csv'
 require 'date'
@@ -62,7 +63,7 @@ FileUtils.mkdir_p( pubdir_1day ) until FileTest.exist?( pubdir_1day )
 #pubdir_didx = "#{pubdir}/didix/#{time_from.strftime("%Y-%m")}"
 #FileUtils.mkdir_p( pubdir_didx ) until FileTest.exist?( pubdir_didx )
 
-p "pubric directory setting OK"
+p"pubric directory setting OK"
 
 # 欠損値
 miss = 999.9
@@ -77,7 +78,7 @@ p "prot start"
 # 7, 30, 90, 120, 360 日の幅で描画
 #* 1日の描画
 #[1].each do |range|
- # p "#{range} days"
+  #p "#{range} days"
   
   # 描画範囲
   #time_from = DateTime.now - range
@@ -119,9 +120,9 @@ p "prot start"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
     set format_x: "%m/%d %H:%M"
-    set xtics:    "rotate by -60"
+    set xtics:    "rotate by -90"
     set terminal: "png"
-    set output:   "#{pubdir_1day}/#{myid}_tamp_#{time_from.strftime("%Y%m%d")}.png"
+    set output:   "#{pubdir_1day}/#{myid}_temp_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
     set :nokey # 凡例なし
     # set key: "box" #凡例あり
@@ -138,7 +139,7 @@ p "prot start"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
     set format_x: "%m/%d %H:%M"
-    set xtics:    "rotate by -60"
+    set xtics:    "rotate by -90"
     set terminal: "png"
     set output:   "#{pubdir_1day}/#{myid}_humi_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
@@ -157,7 +158,7 @@ p "prot start"
     set xdata:    "time"
     set timefmt_x:"%Y-%m-%dT%H:%M:%S+00:00"
     set format_x: "%m/%d %H:%M"
-    set xtics:    "rotate by -60"
+    set xtics:    "rotate by -90"
     set terminal: "png"
     set output:   "#{pubdir_1day}/#{myid}_didx_#{time_from.strftime("%Y%m%d")}.png"
     set :datafile, :missing, "#{miss}" # 欠損値
@@ -167,3 +168,5 @@ p "prot start"
     plot time_list, didx_list, using:'1:($2)', with:"linespoints", lc_rgb:"red", lw:3
   end
 end
+
+p "finish making all graphs"
