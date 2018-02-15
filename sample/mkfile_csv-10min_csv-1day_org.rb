@@ -14,10 +14,10 @@ require 'fileutils'
 ###
 
 # デバイス名
-myid = "iot-22"  
+myid = "iot-01"  
 
 # 公開ディレクトリ
-pubdir = "/home/j1403/public_html/data_csv_1day"
+pubdir = "/home/sugiyama/public_html/data_csv_1day"
 
 
 ###
@@ -74,10 +74,7 @@ end
 
 # NArray オブジェクトへ変換. 解析が容易になる. 
 #  ... 自分で書く ...
-vars_list_narray = Array.new
-num.times do |i|
-  vars_list_narray[i] = NArray.to_na(vars_list[i])
-end
+
 
 ###
 ### 統計処理
@@ -115,10 +112,10 @@ while (time_list[idx0] + 1 < time_list[-1]) do
   unless ( idx2 )
     num.times do |i|
       mean[i]  = vars_list_narray[i][idx0+1..idx1].mean(0)
-      min[i]   = vars_list_narray[i][idx0+1..idx1].min(0)
-      max[i]   = vars_list_narray[i][idx0+1..idx1].max(0)
-     stddev[i] = vars_list_narray[i][idx0+1..idx1].stddev(0)
-     median[i] = vars_list_narray[i][idx0+1..idx1].median(0)
+      min[i]   = # ... 自分で書く ...
+      max[i]   = # ... 自分で書く ...
+      stddev[i]= # ... 自分で書く ...
+      median[i]= # ... 自分で書く ...
     end
   end      
 
@@ -128,21 +125,7 @@ while (time_list[idx0] + 1 < time_list[-1]) do
   csv.close
   # 最小・最大・標準偏差・中央値のファイル出力
   # ... 自分で書く ...
-  csv = open("#{pubdir}/#{myid}_min.csv", "a")
-  csv.puts "#{time0.strftime("%Y/%m/%d")},#{min.join(',')},\n"
-  csv.close
 
-  csv = open("#{pubdir}/#{myid}_max.csv", "a")
-  csv.puts "#{time0.strftime("%Y/%m/%d")},#{max.join(',')},\n"
-  csv.close
-
-  csv = open("#{pubdir}/#{myid}_stddev.csv", "a")
-  csv.puts "#{time0.strftime("%Y/%m/%d")},#{stddev.join(',')},\n"
-  csv.close
-
-  csv = open("#{pubdir}/#{myid}_median.csv", "a")
-  csv.puts "#{time0.strftime("%Y/%m/%d")},#{median.join(',')},\n"
-  csv.close
   # 添字の更新
   idx0 = idx1 
   idx1 = idx0 + count  # 24時間分進める

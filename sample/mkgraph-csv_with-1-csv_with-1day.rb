@@ -64,18 +64,17 @@ miss = 999.9
     # 初期化
     time_list     = Array.new
     temp_list[op] = Array.new
-   Dir.glob("#{srcdir}/"csv").sort.each do |csvfile|
+
     CSV.foreach( "#{srcdir}/#{myid}_#{op}.csv" ) do |item|
 
       time = DateTime.parse( "#{item[0]} 00:00:00 JST" ) # 時刻
-      if time >= time_from && time <= time_from + 1 && time.min ==0
+      if time >= time_from
 
        time_list.push( time)
-       temp_list[myid].push( item[1].to_f)
+       temp_list[op].push( item[1].to_f)
       end
     end
   end
- end
   p "plot from #{time_list[0]} to #{time_list[-1]}"
   
   
