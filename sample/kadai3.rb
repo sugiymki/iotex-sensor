@@ -18,7 +18,7 @@ t=DateTime.now
 md="iot-15_iot-16_iot-17_iot-18"
 (DateTime.parse("#{ARGV[0]}")..DateTime.now).select{|d| d.wday==0}.each do |time_from|
 # 公開ディレクトリ
-pubdir = "/iotex/compare_1week/iot-15_iot-16_iot-17_iot-18/" 
+pubdir = "/iotex/compare_1week/iot-15_iot-16_iot-17_iot-18" 
 pubdir1 = "#{pubdir}/temp/#{time_from.year}/" 
 pubdir2 = "#{pubdir}/humi/#{time_from.year}/" 
 pubdir3 = "#{pubdir}/didx/#{time_from.year}/" 
