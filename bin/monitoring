@@ -9,12 +9,35 @@
 #       2017-11-18 杉山耕一朗
 #       2017-12-03 杉山耕一朗
 #       2017-12-15 杉山耕一朗
+#       2018-11-20 杉山耕一朗
 #
-# メモ: sudo できることが前提
 
 require 'open3'
 require 'fileutils'
 require "matrix"
+
+##################################################
+# 環境設定
+##################################################
+
+# サーバ名. 
+#server = "localhost"
+server = "sky.epi.it.matsue-ct.jp"
+
+# サーバ上のデータ受け取り用 PHP スクリプト
+#php = "http://#{server}/monitoring.php"
+php = "http://#{server}/~sugiyama/php/iotex2018.php"
+
+# データに付ける ID
+id  = "IoTeX2018"
+
+##################################################
+# 変数の初期化
+##################################################
+
+# hostname
+o, e, s = Open3.capture3("hostname")
+host = o.chomp
 
 # パス.
 # sht は pip install sht で /usr/local/bin 以下にインストールされる.
@@ -28,17 +51,6 @@ bin_list = {
   "tmp007"=> "#{path}/tmp007 --obj --die",
   "tsl2561"=> "#{path}/tsl2561 -l"
 }
-
-# テキストファイル
-file_list = {
-  "sht75"  => ["temp.txt", "humi.txt", "dp.txt"],
-  "sht75-2"=> ["temp-2.txt", "humi-2.txt", "dp-2.txt"],
-  "sht75-3"=> ["temp-3.txt", "humi-3.txt", "dp-3.txt"], 
-  "bmp180" => ["pres.txt", "bmptemp.txt"], 
-  "tmp007" => ["objtemp.txt", "dietemp.txt"], 
-  "tsl2561"=> ["lux.txt"]
-}
-
 # データベースのカラム名
 db_list = {
   "sht75"  => ["temp",  "humi",  "dp"],
@@ -48,7 +60,6 @@ db_list = {
   "tmp007" => ["objtemp", "dietemp"], 
   "tsl2561"=> ["lux"]
 }
-
 # データ保管
 data_10sec = {
   "sht75"  => Array.new, 
@@ -58,25 +69,6 @@ data_10sec = {
   "tmp007" => Array.new, 
   "tsl2561"=> Array.new, 
 }
-
-# 時刻合わせ
-# NTP で時間が調整が終わるまで待つ. 
-o = "no"
-while (o =~ /no$/) do
-  o, e, s = Open3.capture3("timedatectl status| grep NTP")
-  sleep 10
-end
-
-# パワーマネージメント機能を OFF にする. 
-system("sudo iwconfig wlan0 power off")
-
-# hostname
-o, e, s = Open3.capture3("hostname")
-host = o.chomp
-
-# サーバ名
-server = "sky.epi.it.matsue-ct.jp"
-php    = "http://#{server}/~sugiyama/test/monitoring.php"
 
 # ディレクトリの用意. 定常
 dir_now = "data_now/#{host}"
@@ -89,7 +81,6 @@ file_chk3 = "#{dir_chk}/retry.all.txt"
 
 # 保管用配列
 var_list = Array.new
-
 # SHT75 が存在するか確認
 ["sht75", "sht75-2", "sht75-3"].each{|sens|
   o, e, s = Open3.capture3(bin_list[sens])
@@ -98,23 +89,32 @@ var_list = Array.new
     var_list.push( sens )
   end
 }
-
 # bmp180 が存在するか確認
 o, e, s = Open3.capture3("/usr/sbin/i2cdetect -y 1 | grep \" 77 \"")
 unless o ==""
   var_list.push( "bmp180" )
 end
-
 # tmp007 が存在するか確認
 o, e, s = Open3.capture3("/usr/sbin/i2cdetect -y 1 | grep \" 40 \"")
 unless o ==""
   var_list.push( "tmp007" )
 end
-
 # tsl2561 が存在するか確認
 o, e, s = Open3.capture3("/usr/sbin/i2cdetect -y 1 | grep \" 39 \"")
 unless o ==""
   var_list.push( "tsl2561" )
+end
+
+
+##################################################
+# データ取り・転送
+##################################################
+
+# 時刻合わせ. NTP で時間が調整が終わるまで待つ. 
+o = "no"
+while (o =~ /no$/) do
+  o, e, s = Open3.capture3("timedatectl status| grep NTP")
+  sleep 10
 end
 
 # データ取り. 無限ループ
@@ -131,10 +131,12 @@ while true do
   if date.sec % 10 == 0
 #    p date
     
+    # 各センサーでループを回す
     var_list.each{|var|
       
       # コマンドの実行
       o, e, s = Open3.capture3("#{bin_list[var]}")
+#      p o
       
       # 結果の保管
       if e==""
@@ -144,28 +146,32 @@ while true do
         # 配列に保管
         data_10sec[var].push ( output_list )
       end
-#      p var
-#      p data_10sec[var]
     }
   end
 
   # 1 分間隔で平均 => データ保管 & 転送
   if date.sec == 0  
+    p date
     
     # 無線 LAN アクセスポイントの ESSID を取得
     o, e, s = Open3.capture3("iwconfig wlan0|grep ESSID")
     /ESSID:\"(.+)\"/ =~ o
-    essid = $1 
+    if $1
+      essid = $1
+    else
+      essid = "Wired"
+    end
     
     # url の準備
-    url = "#{php}?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=mon\&essid=#{essid}"
+    url = "#{php}?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=#{id}\&essid=#{essid}"
 
+    # 各センサーに対してループを回す
     var_list.each{|var|    
-#      p var
+
       # 出力リスト
       output_list = Array.new
-
-      for i in 0 .. (file_list[var].size - 1) do
+      
+      for i in 0 .. (db_list[var].size - 1) do
         
         # 平均値の作成
         subarray = Matrix[*data_10sec[var]].t.row(i)
@@ -175,16 +181,11 @@ while true do
           mean += x.to_f / num
         }        
         output_list.push( mean )
-#        p subarray
-#        p mean
-        
-        # テキストファイルへの書き出し
-        f = open("#{dir_now}/#{file_list[var][i]}", "w")
-        f.puts( mean )
-        f.close
+        p subarray
+        p mean
         
         # 保存
-        url = "#{url}\&#{db_list[var][i]}=#{mean}"
+        url = "#{url}\&#{db_list[var][i]}=#{sprintf("%.2f",mean)}"
       end
 
       # 初期化
@@ -193,8 +194,8 @@ while true do
 
     # サーバへ情報を送る.
     o, e, s = Open3.capture3("curl -m 2 -X GET \"#{url}\"") # タイムアウト 2 秒
-#    p url
-#    p o, e, s
+    p url
+    p o, e, s
 
     # curl コマンドがタイムアウトするか否かでネットワークの接続性を判断
     if (/exit 0$/ =~ s.to_s || /^ERROR/ =~ o ) 
@@ -229,9 +230,6 @@ while true do
       afile.puts("curl -X GET \"#{url}\"")  
       afile.close
 
-      # ネットワーク再接続のために DHCP 再起動
-      system("sudo /etc/init.d/dhcpcd stop")
-      system("sudo /etc/init.d/dhcpcd start")
     end
   end
 end

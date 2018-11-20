@@ -1,0 +1,184 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+#
+# 表題: センサーからデータを取得してファイルに保存するためのスクリプト
+#       小型気象センサー metpak 用. シリアル通信を行う. 
+#
+# 履歴: 2017-01-11 杉山耕一朗
+#       2017-03-01 杉山耕一朗
+#       2017-11-17 杉山耕一朗
+#       2017-11-18 杉山耕一朗
+#       2017-12-03 杉山耕一朗
+#       2017-12-15 杉山耕一朗
+#       2018-09-13 杉山耕一朗
+#       2018-11-20 杉山耕一朗
+
+require 'serialport'
+require 'open3'
+require 'fileutils'
+require "matrix"
+
+# シリアルポートの設定
+serialport='/dev/ttyUSB0'
+
+# パス.
+path = "./iotex-sensor/bin"
+
+# 出力変数とカラム番号
+vars_list = ["winddir", "windvel", "pres", "humi", "temp", "dp", "vol", "status"]
+         
+# データ保管
+data_10sec = Array.new
+
+# シリアルポートオープン
+begin
+  sp = SerialPort.new(serialport, 19200, 8, 1, 0)
+rescue
+  puts "Could not open serial port."
+  exit false
+end
+
+# 時刻合わせ. NTP で時間が調整が終わるまで待つ. 
+while true do
+  o, e, s = Open3.capture3("ntpq -np | grep \"*\"")
+  break unless o.chomp == ""
+  sleep 10
+end
+
+# hostname
+o, e, s = Open3.capture3("hostname")
+host = o.chomp
+
+# サーバ名
+server = "localhost"
+php    = "http://#{server}/hogehoge.php"  
+
+# ディレクトリの用意. 定常
+dir_now = "data_now/#{host}"
+FileUtils.mkdir_p( dir_now ) unless FileTest.exist?( dir_now )
+dir_chk = dir_now
+FileUtils.mkdir_p( dir_chk ) unless FileTest.exist?( dir_chk )
+file_chk1 = "#{dir_chk}/retry.txt"
+file_chk2 = "#{dir_chk}/retry.tmp.txt"
+file_chk3 = "#{dir_chk}/retry.all.txt" 
+
+# データ取り. 無限ループ
+while true do
+ 
+  # 時間調整
+  sleep 1 
+
+  # 現在時刻取得
+  date = Time.now
+  p date
+  
+  # 10 秒毎にデータ取得
+  if date.sec % 10 == 0
+
+    p date
+    
+    # データを受け取る
+    line=sp.readline.chomp.strip
+    
+    # データ中の最初と最後の制御文字を削るための処理. 
+    array=line.split(",") 
+    array.pop
+    array.shift
+
+    # データの保管
+    if array.size == 8
+      data_10sec.push ( array )
+    end
+    p data_10sec
+
+  end
+  
+  # 1 分間隔で平均 => データ保管 & 転送
+  if date.sec == 0  
+
+    # サイズチェック.
+    next unless data_10sec.size > 1
+    
+    # 無線 LAN アクセスポイントの ESSID を取得
+    o, e, s = Open3.capture3("/sbin/iwconfig wlan0|grep ESSID")
+    /ESSID:\"(.+)\"/ =~ o
+    essid = $1 
+    
+    # url の準備
+    url = "#{php}?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=mon\&essid=#{essid}"
+    
+    # 出力リスト
+    output_list = Array.new
+    
+    # 転置行列
+    data_10sec_trans = Matrix[*data_10sec].t
+    p data_10sec_trans
+    
+    for i in 0 .. (vars_list.size - 1) do
+      
+      # 平均値の作成
+      subarray = data_10sec_trans.row(i)
+      num = subarray.size
+      mean = 0.0
+      subarray.each{|x|
+        mean += x.to_f / num
+      }              
+      output_list.push( sprintf('%.2f', mean ) )
+      
+      # 保存
+      url = "#{url}\&#{vars_list[i]}=#{mean}"
+      
+      # 初期化
+      data_10sec = Array.new      
+    end
+
+    # csv ファイルに書き込み
+    dir = "data_csv/#{host}/#{date.strftime("%Y")}/#{date.strftime("%Y-%m")}"
+    FileUtils.mkdir_p( dir ) unless FileTest.exist?( dir )      
+    f = open("#{dir}/metpak_#{date.strftime("%Y-%m-%d")}.csv", "a")
+    f.puts( "#{date.strftime("%Y/%m/%d %H:%M:%S")},#{output_list.join(',')},")
+    f.close
+    
+    # サーバへ情報を送る.
+    o, e, s = Open3.capture3("curl -m 2 -X GET \"#{url}\"") # タイムアウト 2 秒
+    p url
+    p o, e, s
+
+    # curl コマンドがタイムアウトするか否かでネットワークの接続性を判断
+    if (/exit 0$/ =~ s.to_s || /^ERROR/ =~ o ) 
+
+      # 送信漏れがあれば (該当ファイルがあれば) 再度送信.
+      # 一度に全部送ると時間がかかるので, 10 行分に限定. 
+      if FileTest.exist?( file_chk1 ) 
+        i = 0
+        efile = open(file_chk1, "r") 
+        rfile = open(file_chk2, "w")  # 一時ファイル
+        while line = efile.gets
+          if (i < 10)
+            o, e, s = Open3.capture3( line )
+          else
+            rfile.puts( line )  # 11 行目以降は一時ファイルに保管.
+          end
+          i=i+1
+        end
+        efile.close
+        rfile.close
+        FileUtils.mv(file_chk2, file_chk1) # 11 行目以降をファイルに残す
+      end
+
+    else
+      # 実行コマンドを保管
+      rfile = open(file_chk1, "a")
+      rfile.puts("curl -X GET \"#{url}\"") 
+      rfile.close
+
+      # 実行コマンドを保管 (チェック用)
+      afile = open(file_chk3, "a") 
+      afile.puts("curl -X GET \"#{url}\"")  
+      afile.close
+
+    end
+  end
+end
+
+exit
