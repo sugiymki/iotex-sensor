@@ -5,31 +5,36 @@
 # Author: Ko-ichiro Sugiyama
 #
 # This program is based on the following script: 
-# https://learn.adafruit.com/adafruit-sgp30-gas-tvoc-eco2-mox-sensor/circuitpython-wiring-test
+# https://pypi.org/project/sgp30/
 
+from smbus2 import SMBusWrapper
+from sgp30 import Sgp30
 import time
-import board
-import busio
-import adafruit_sgp30
+import argparse
+import re
 
-i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
+parser = argparse.ArgumentParser(description='MyScript')
+parser.add_argument('--eco2',    '-e', action='store_const', const=True, default=False )
+parser.add_argument('--tvoc',    '-t', action='store_const', const=True, default=False )
+parser.add_argument('--verbose', '-v', action='store_const', const=True, default=False )
+args = parser.parse_args()
 
-# Create library object on our I2C port
-sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
-
-print("SGP30 serial #", [hex(i) for i in sgp30.serial])
-
-sgp30.iaq_init()
-sgp30.set_iaq_baseline(0x8973, 0x8aae)
-
-elapsed_sec = 0
-
-while True:
-    print("eCO2 = %d ppm \t TVOC = %d ppb" % (sgp30.eCO2, sgp30.TVOC))
-    time.sleep(1)
-    elapsed_sec += 1
-    if elapsed_sec > 10:
-        elapsed_sec = 0
-        print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x"
-              % (sgp30.baseline_eCO2, sgp30.baseline_TVOC))
-
+with SMBusWrapper(1) as bus:
+    sgp=Sgp30(bus,baseline_filename="/tmp/mySGP30_baseline")
+    sgp.i2c_geral_call() #WARNING: Will reset any device on teh i2cbus that listens for general call
+    sgp.read_features()
+    sgp.read_serial()
+    sgp.init_sgp()
+    if args.verbose:
+        print("the SGP30 takes at least 15 seconds to warm up, 12 hours before the readigs become really stable")
+    for i in range(20):
+        sgp.read_measurements()
+        time.sleep(1)        
+        if args.verbose:
+            print(sgp.read_measurements())
+    nums = re.match('.*data=\D+(\d+)\D+(\d+)\D+.*raw=.+', str( sgp.read_measurements() ))
+    if nums:
+        if args.eco2:
+            print( nums.group(1) )
+        if args.tvoc:            
+            print( nums.group(2) )
