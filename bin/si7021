@@ -17,10 +17,10 @@ args = parser.parse_args()
 
 RHTEMP = Si7021()
 
-if args.relativehumidity:
-    print( str(round(RHTEMP.relative_humidity, 2)) )
 if args.temperature:
     print( str(round(RHTEMP.temperature, 2)) )
+if args.relativehumidity:
+    print( str(round(RHTEMP.relative_humidity, 2)) )
 if not args.temperature and not args.relativehumidity: 
     print("Temperature: " + str(round(RHTEMP.temperature, 2)) + u" \u00B0C")
     print("Relative humidity: " + str(round(RHTEMP.relative_humidity, 2)) + " %")

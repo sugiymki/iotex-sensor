@@ -10,6 +10,7 @@
 #       2017-12-03 杉山耕一朗
 #       2017-12-15 杉山耕一朗
 #       2018-11-20 杉山耕一朗
+#       2019-08-27 杉山耕一朗
 #
 
 require 'open3'
@@ -22,14 +23,13 @@ require "matrix"
 
 # サーバ名. 
 #server = "localhost"
-server = "sky.epi.it.matsue-ct.jp"
+server = "10.52.2.65"
 
 # サーバ上のデータ受け取り用 PHP スクリプト
-#php = "http://#{server}/monitoring.php"
-php = "http://#{server}/~sugiyama/php/iotex2018.php"
+php = "http://#{server}/~hogehoge/php/monitoring.php"
 
 # データに付ける ID
-id  = "IoTeX2018"
+id  = "IoTeX"
 
 ##################################################
 # 変数の初期化
@@ -39,18 +39,21 @@ id  = "IoTeX2018"
 o, e, s = Open3.capture3("hostname")
 host = o.chomp
 
-# パス.
-# sht は pip install sht で /usr/local/bin 以下にインストールされる.
-# bmp180, tmp007, tsl2561 は本 git リポジトリで提供.
+# git リポジトリのパス
 path = "./iotex-sensor/bin"
+
+# コマンドリスト
 bin_list = {
   "sht75"   => "/usr/local/bin/sht  -trd 24 23",
   "sht75-2" => "/usr/local/bin/sht  -trd 27 22",
   "sht75-3" => "/usr/local/bin/sht  -trd 18 17",
-  "bmp180"=> "#{path}/bmp180 -p -t",
-  "tmp007"=> "#{path}/tmp007 --obj --die",
-  "tsl2561"=> "#{path}/tsl2561 -l"
+  "bmp180"  => "#{path}/bmp180  -p -t",
+  "tmp007"  => "#{path}/tmp007  --obj --die",
+  "tsl2561" => "#{path}/tsl2561 -l",
+  "si7021"  => "#{path}/si7021  -t -r",
+  "sgp30"   => "#{path}/sgp30   -e -t"
 }
+
 # データベースのカラム名
 db_list = {
   "sht75"  => ["temp",  "humi",  "dp"],
@@ -58,7 +61,9 @@ db_list = {
   "sht75-3"=> ["temp3", "humi3", "dp3"], 
   "bmp180" => ["pres", "bmptemp"], 
   "tmp007" => ["objtemp", "dietemp"], 
-  "tsl2561"=> ["lux"]
+  "tsl2561"=> ["lux"],
+  "si7021" => ["sitemp", "sihumi"],
+  "sgp30"  => ["eco2", "tvoc"]
 }
 # データ保管
 data_10sec = {
@@ -67,7 +72,9 @@ data_10sec = {
   "sht75-3"=> Array.new, 
   "bmp180" => Array.new, 
   "tmp007" => Array.new, 
-  "tsl2561"=> Array.new, 
+  "tsl2561"=> Array.new,
+  "si7021" => Array.new,
+  "sgp30"  => Array.new
 }
 
 # ディレクトリの用意. 定常
@@ -81,34 +88,37 @@ file_chk3 = "#{dir_chk}/retry.all.txt"
 
 # 保管用配列
 var_list = Array.new
-# SHT75 が存在するか確認
-["sht75", "sht75-2", "sht75-3"].each{|sens|
+
+# 存在するセンサーを確認
+bin_list.keys.each do |sens|
   o, e, s = Open3.capture3(bin_list[sens])
   num = o.split("\n")
   unless num[0] == nil
     var_list.push( sens )
   end
-}
-# bmp180 が存在するか確認
-o, e, s = Open3.capture3("/usr/sbin/i2cdetect -y 1 | grep \" 77 \"")
-unless o ==""
-  var_list.push( "bmp180" )
 end
-# tmp007 が存在するか確認
-o, e, s = Open3.capture3("/usr/sbin/i2cdetect -y 1 | grep \" 40 \"")
-unless o ==""
-  var_list.push( "tmp007" )
-end
-# tsl2561 が存在するか確認
-o, e, s = Open3.capture3("/usr/sbin/i2cdetect -y 1 | grep \" 39 \"")
-unless o ==""
-  var_list.push( "tsl2561" )
-end
+
+# 確認
+p var_list
 
 
 ##################################################
 # データ取り・転送
 ##################################################
+
+#SGP30 が接続している場合は, センサの初期化を行う. 20 秒程度かかる.
+if var_list.find("sgp30")
+#  p "OK"
+  # SGP30 の個別的設定
+  system( "#{path}/sgp30 -v" )
+end
+
+#Si7021 が接続している場合は, pigpiod を起動する
+if var_list.find("si7021")
+#  p "OK"
+  # SGP30 の個別的設定
+  system( "sudo /usr/bin/pigpiod" )
+end
 
 # 時刻合わせ. NTP で時間が調整が終わるまで待つ. 
 o = "no"
@@ -129,14 +139,14 @@ while true do
 
   # 10 秒毎にデータ取得
   if date.sec % 10 == 0
-#    p date
+ #   p date
     
     # 各センサーでループを回す
     var_list.each{|var|
       
       # コマンドの実行
       o, e, s = Open3.capture3("#{bin_list[var]}")
-#      p o
+ #     p o
       
       # 結果の保管
       if e==""
@@ -151,7 +161,7 @@ while true do
 
   # 1 分間隔で平均 => データ保管 & 転送
   if date.sec == 0  
-    p date
+#    p date
     
     # 無線 LAN アクセスポイントの ESSID を取得
     o, e, s = Open3.capture3("iwconfig wlan0|grep ESSID")
@@ -181,8 +191,8 @@ while true do
           mean += x.to_f / num
         }        
         output_list.push( mean )
-        p subarray
-        p mean
+        p "data : #{subarray}"
+        p "mean : #{mean}"
         
         # 保存
         url = "#{url}\&#{db_list[var][i]}=#{sprintf("%.2f",mean)}"

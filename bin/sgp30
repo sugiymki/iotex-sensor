@@ -12,6 +12,7 @@ from sgp30 import Sgp30
 import time
 import argparse
 import re
+import sys
 
 parser = argparse.ArgumentParser(description='MyScript')
 parser.add_argument('--eco2',    '-e', action='store_const', const=True, default=False )
@@ -21,17 +22,17 @@ args = parser.parse_args()
 
 with SMBusWrapper(1) as bus:
     sgp=Sgp30(bus,baseline_filename="/tmp/mySGP30_baseline")
-    sgp.i2c_geral_call() #WARNING: Will reset any device on teh i2cbus that listens for general call
-    sgp.read_features()
-    sgp.read_serial()
-    sgp.init_sgp()
     if args.verbose:
+        sgp.i2c_geral_call() #WARNING: Will reset any device on teh i2cbus that listens for general call
+        sgp.read_features()
+        sgp.read_serial()
+        sgp.init_sgp()
         print("the SGP30 takes at least 15 seconds to warm up, 12 hours before the readigs become really stable")
-    for i in range(20):
-        sgp.read_measurements()
-        time.sleep(1)        
-        if args.verbose:
+        for i in range(20):
+            time.sleep(1)        
             print(sgp.read_measurements())
+        sys.exit()
+            
     nums = re.match('.*data=\D+(\d+)\D+(\d+)\D+.*raw=.+', str( sgp.read_measurements() ))
     if nums:
         if args.eco2:
