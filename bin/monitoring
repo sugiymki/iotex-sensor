@@ -23,7 +23,6 @@ require "matrix"
 
 # 送信先の PHP スクリプト
 phps = [
-  "http://10.52.2.65/~hogehoge/php/monitoring.php",
   "http://10.52.2.65/~hogehoge/php/monitoring.php"
 ]
 
