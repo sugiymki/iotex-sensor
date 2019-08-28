@@ -21,12 +21,11 @@ require "matrix"
 # 環境設定
 ##################################################
 
-# サーバ名. 
-#server = "localhost"
-server = "10.52.2.65"
-
-# サーバ上のデータ受け取り用 PHP スクリプト
-php = "http://#{server}/~hogehoge/php/monitoring.php"
+# 送信先の PHP スクリプト
+phps = [
+  "http://10.52.2.65/~hogehoge/php/monitoring.php",
+  "http://10.52.2.65/~hogehoge/php/monitoring.php"
+]
 
 # データに付ける ID
 id  = "IoTeX"
@@ -173,7 +172,7 @@ while true do
     end
     
     # url の準備
-    url = "#{php}?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=#{id}\&essid=#{essid}"
+    url = "?hostname=#{host}\&time=#{date.strftime("%Y/%m/%dT%H:%M:%S")}\&experiment_id=#{id}\&essid=#{essid}"
 
     # 各センサーに対してループを回す
     var_list.each{|var|    
@@ -202,44 +201,46 @@ while true do
       data_10sec[var] = Array.new      
     }
 
-    # サーバへ情報を送る.
-    o, e, s = Open3.capture3("curl -m 2 -X GET \"#{url}\"") # タイムアウト 2 秒
-    p url
-    p o, e, s
+    # サーバへ情報を送る. 送り先は複数取りうる. 
+    phps.each do |php|
+      o, e, s = Open3.capture3("curl -m 2 -X GET \"#{php}#{url}\"") # タイムアウト 2 秒
+      p "curl -m 2 -X GET \"#{php}#{url}\""
+      p o, e, s
 
-    # curl コマンドがタイムアウトするか否かでネットワークの接続性を判断
-    if (/exit 0$/ =~ s.to_s || /^ERROR/ =~ o ) 
-
-      # 送信漏れがあれば (該当ファイルがあれば) 再度送信.
-      # 一度に全部送ると時間がかかるので, 10 行分に限定. 
-      if FileTest.exist?( file_chk1 ) 
-        i = 0
-        efile = open(file_chk1, "r") 
-        rfile = open(file_chk2, "w")  # 一時ファイル
-        while line = efile.gets
-          if (i < 10)
-            o, e, s = Open3.capture3( line )
-          else
-            rfile.puts( line )  # 11 行目以降は一時ファイルに保管.
+      # curl コマンドがタイムアウトするか否かでネットワークの接続性を判断
+      if (/exit 0$/ =~ s.to_s || /^ERROR/ =~ o ) 
+        
+        # 送信漏れがあれば (該当ファイルがあれば) 再度送信.
+        # 一度に全部送ると時間がかかるので, 10 行分に限定. 
+        if FileTest.exist?( file_chk1 ) 
+          i = 0
+          efile = open(file_chk1, "r") 
+          rfile = open(file_chk2, "w")  # 一時ファイル
+          while line = efile.gets
+            if (i < 10)
+              o, e, s = Open3.capture3( line )
+            else
+              rfile.puts( line )  # 11 行目以降は一時ファイルに保管.
+            end
+            i=i+1
           end
-          i=i+1
+          efile.close
+          rfile.close
+          FileUtils.mv(file_chk2, file_chk1) # 11 行目以降をファイルに残す
         end
-        efile.close
+
+      else
+        # 実行コマンドを保管
+        rfile = open(file_chk1, "a")
+        rfile.puts("curl -X GET \"#{php}#{url}\"")
         rfile.close
-        FileUtils.mv(file_chk2, file_chk1) # 11 行目以降をファイルに残す
+        
+        # 実行コマンドを保管 (チェック用)
+        afile = open(file_chk3, "a") 
+        afile.puts("curl -X GET \"#{php}#{url}\"")
+        afile.close
+        
       end
-
-    else
-      # 実行コマンドを保管
-      rfile = open(file_chk1, "a")
-      rfile.puts("curl -X GET \"#{url}\"") 
-      rfile.close
-
-      # 実行コマンドを保管 (チェック用)
-      afile = open(file_chk3, "a") 
-      afile.puts("curl -X GET \"#{url}\"")  
-      afile.close
-
     end
   end
 end
