@@ -23,3 +23,4 @@
 MAILTO=""
 PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 @reboot ./iotex-sensor/bin/monitoring
+@reboot sleep 120; ruby ./iotex-sensor/bin/wifi-reset.rb
