@@ -22,7 +22,7 @@ loop do
 
   # 5 分ネットワークが止まっていたら再起動
   if count > 5
-    system('reboot')
+    system('sudo reboot')
     break
   end
 
