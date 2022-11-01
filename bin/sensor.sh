@@ -30,9 +30,8 @@ do
   if [ $sec = "00" ] ; then
     time=`date +%Y%m%d%H%M%S`
     temp=`$bin -t`
-    humi=`$bin -r`
-    echo $time $temp $humi
-    curl -u herohero:hogehero "https://$url?hostname=$hostname&time=$time&temp=$temp&humi=$humi"
+    # echo $time $temp
+    curl -u herohero:hogehero "https://$url?hostname=$hostname&time=$time&temp=$temp"
   fi
   sleep 1
 done
